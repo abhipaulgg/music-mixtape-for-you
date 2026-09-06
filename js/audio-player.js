@@ -58,11 +58,14 @@ export class TapeAudioPlayer {
     this.ytPlayer = new window.YT.Player('ytPlayerElement', {
       height: '100%',
       width: '100%',
+      host: 'https://www.youtube-nocookie.com',
       playerVars: {
         playsinline: 1,
         controls: 1,
         rel: 0,
-        modestbranding: 1
+        modestbranding: 1,
+        iv_load_policy: 3,
+        origin: window.location.origin
       },
       events: {
         onReady: () => {
