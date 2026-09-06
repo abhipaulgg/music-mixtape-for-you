@@ -1,6 +1,6 @@
 // Main Application Orchestrator (Single-Page Curvy Aesthetic Mixtape)
-import { TapeAudioPlayer } from './audio-player.js?v=7.0';
-import { mixtapeStore } from './mixtape-store.js?v=7.0';
+import { TapeAudioPlayer } from './audio-player.js?v=8.0';
+import { mixtapeStore } from './mixtape-store.js?v=8.0';
 
 class SinglePageMixtapeApp {
   constructor() {
@@ -30,6 +30,12 @@ class SinglePageMixtapeApp {
     this.btnOpenEdit = document.getElementById('btnOpenEdit');
 
     // Player Elements
+    this.albumBackdropBlur = document.getElementById('albumBackdropBlur');
+    this.albumArtImg = document.getElementById('albumArtImg');
+    this.vinylDisc = document.getElementById('vinylDisc');
+    this.vinylLabel = document.getElementById('vinylLabel');
+    this.hifiLed = document.getElementById('hifiLed');
+    this.albumArtBars = document.getElementById('albumArtBars');
     this.trackIndexBadge = document.getElementById('trackIndexBadge');
     this.playerTrackTitle = document.getElementById('playerTrackTitle');
     this.playerTrackArtist = document.getElementById('playerTrackArtist');
@@ -118,6 +124,21 @@ class SinglePageMixtapeApp {
         } else {
           this.equalizerBars.classList.remove('playing');
         }
+      }
+
+      if (this.vinylDisc) {
+        if (isPlaying) this.vinylDisc.classList.add('spinning');
+        else this.vinylDisc.classList.remove('spinning');
+      }
+
+      if (this.albumArtBars) {
+        if (isPlaying) this.albumArtBars.classList.add('playing');
+        else this.albumArtBars.classList.remove('playing');
+      }
+
+      if (this.hifiLed) {
+        if (isPlaying) this.hifiLed.classList.add('active');
+        else this.hifiLed.classList.remove('active');
       }
 
       // Update active track card
@@ -308,6 +329,12 @@ class SinglePageMixtapeApp {
     // Update Note Card
     this.activeSongNote.textContent = track.note || 'No note added yet for this track. Click "Edit Note" to write one!';
     this.noteSongReference.textContent = `For Track ${globalIdxStr} · ${track.title}`;
+
+    // Update Album Artwork & Dynamic Blurred Backdrop
+    const thumbUrl = track.thumbnail || (track.youtubeId ? `https://img.youtube.com/vi/${track.youtubeId}/hqdefault.jpg` : 'assets/tape-placeholder.png');
+    if (this.albumArtImg) this.albumArtImg.src = thumbUrl;
+    if (this.albumBackdropBlur) this.albumBackdropBlur.style.backgroundImage = `url("${thumbUrl}")`;
+    if (this.vinylLabel) this.vinylLabel.style.backgroundImage = `url("${thumbUrl}")`;
 
     // Audio player cue / load
     this.player.loadTrack(track, autoPlay);

@@ -19,7 +19,7 @@
 
 
   <!-- Clean, Curvy, Aesthetic Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=7.0">
+  <link rel="stylesheet" href="css/style.css?v=8.0">
 </head>
 <body>
 
@@ -78,11 +78,44 @@
     <!-- Left Column: YouTube Player & Note Card -->
     <section class="player-column">
       
-      <!-- Video Screen Frame -->
+      <!-- Album Art Player -->
       <div class="video-theater-wrapper">
         <div class="video-screen-bezel">
-          <div class="video-container" id="videoContainer">
-            <div id="ytPlayerElement"></div>
+          <div class="video-container album-art-container" id="videoContainer">
+            <!-- Ambient blurred backdrop of current song -->
+            <div class="album-backdrop-blur" id="albumBackdropBlur"></div>
+            <div class="album-backdrop-overlay"></div>
+
+            <!-- Main Vinyl & Sleeve Display -->
+            <div class="turntable-stage">
+              <!-- Sleeve / Cover Art -->
+              <div class="album-sleeve" id="albumSleeve">
+                <img class="album-cover-img" id="albumArtImg" src="https://img.youtube.com/vi/vGJTaP6anOU/mqdefault.jpg" alt="Song Cover Art">
+                <div class="album-sleeve-sheen"></div>
+              </div>
+
+              <!-- Spinning Vinyl Disc that peeks out -->
+              <div class="vinyl-record" id="vinylDisc">
+                <div class="vinyl-grooves"></div>
+                <div class="vinyl-center-label" id="vinylLabel">
+                  <div class="vinyl-spindle-hole"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Audio Hi-Fi Status Badge -->
+            <div class="hifi-badge">
+              <span class="hifi-led" id="hifiLed"></span>
+              <span class="hifi-text">DIRECT AUDIO · AD-FREE</span>
+            </div>
+
+            <!-- Waveform Visualizer across the bottom -->
+            <div class="album-visualizer-bars" id="albumArtBars">
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+              <span></span><span></span><span></span><span></span><span></span>
+            </div>
           </div>
         </div>
 
@@ -369,6 +402,6 @@ this is it.</div>
   <div class="toast-message" id="toastMessage">Copied to clipboard!</div>
 
   <!-- App Main Entry Point -->
-  <script type="module" src="js/app.js?v=7.0"></script>
+  <script type="module" src="js/app.js?v=8.0"></script>
 </body>
 </html>

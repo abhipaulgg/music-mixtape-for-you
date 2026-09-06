@@ -152,10 +152,10 @@ That strange feeling of knowing you probably shouldn't fall any further, but som
 No logic. No calculation.
 Just you.`,
           duration: 182,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'vGJTaP6anOU',
           thumbnail: 'https://img.youtube.com/vi/vGJTaP6anOU/mqdefault.jpg',
-          url: 'https://youtu.be/vGJTaP6anOU'
+          url: 'assets/audio/cant-help-falling-in-love.mp3'
         },
         {
           id: 'trk-2',
@@ -171,10 +171,10 @@ And sometimes a photograph isn't really a photograph.
 
 Sometimes it's just a reminder that something beautiful actually happened.`,
           duration: 259,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'KKQl-pIRQMY',
           thumbnail: 'https://img.youtube.com/vi/KKQl-pIRQMY/mqdefault.jpg',
-          url: 'https://youtu.be/KKQl-pIRQMY'
+          url: 'assets/audio/photograph.mp3'
         },
         {
           id: 'trk-3',
@@ -188,10 +188,10 @@ Maybe that's the cruelest part.
 
 You can have something real and still not know how to keep it safe.`,
           duration: 215,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'tTPZwlKqawY',
           thumbnail: 'https://img.youtube.com/vi/tTPZwlKqawY/mqdefault.jpg',
-          url: 'https://youtu.be/tTPZwlKqawY'
+          url: 'assets/audio/saazish.mp3'
         },
         {
           id: 'trk-4',
@@ -205,10 +205,10 @@ that I forgot to ask myself what I wanted and who I was becoming.
 
 Maybe loving someone should never mean completely losing yourself.`,
           duration: 275,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'VKJq7FqYa9c',
           thumbnail: 'https://img.youtube.com/vi/VKJq7FqYa9c/mqdefault.jpg',
-          url: 'https://youtu.be/VKJq7FqYa9c'
+          url: 'assets/audio/ami-sudhu-khujechi-amay.mp3'
         }
       ],
       sideB: [
@@ -224,10 +224,10 @@ Because despite everything, there are memories of you that I don't want to turn 
 
 Some things deserve to remain beautiful.`,
           duration: 236,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'GTrvzcwm7tw',
           thumbnail: 'https://img.youtube.com/vi/GTrvzcwm7tw/mqdefault.jpg',
-          url: 'https://youtu.be/GTrvzcwm7tw'
+          url: 'assets/audio/sonar-kathi.mp3'
         },
         {
           id: 'trk-6',
@@ -241,10 +241,10 @@ The kind that happens when two people who once felt incredibly close suddenly ha
 
 Sometimes you can see someone clearly and still feel impossibly far away.`,
           duration: 212,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'Y2zc2IeVX_g',
           thumbnail: 'https://img.youtube.com/vi/Y2zc2IeVX_g/mqdefault.jpg',
-          url: 'https://youtu.be/Y2zc2IeVX_g'
+          url: 'assets/audio/ocean.mp3'
         },
         {
           id: 'trk-7',
@@ -276,10 +276,10 @@ You still do.
 
 And perhaps that's all this mixtape is trying to say.`,
           duration: 248,
-          source: 'youtube',
+          source: 'local',
           youtubeId: 'qZbdZEFsT3U',
           thumbnail: 'https://img.youtube.com/vi/qZbdZEFsT3U/mqdefault.jpg',
-          url: 'https://youtu.be/qZbdZEFsT3U'
+          url: 'assets/audio/tumi-robe-nirobe.mp3'
         }
       ]
     };
