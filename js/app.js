@@ -3,7 +3,7 @@ import { TapeAudioPlayer } from './audio-player.js?v=2.5';
 import { mixtapeStore } from './mixtape-store.js?v=2.5';
 import { ShareEngine } from './share-engine.js?v=2.5';
 import { PRESET_SONGS } from './preset-songs.js?v=2.5';
-import { authManager } from './auth-manager.js?v=3.1';
+import { authManager } from './auth-manager.js?v=3.2';
 
 class MixtapeApp {
   constructor() {
@@ -66,17 +66,13 @@ class MixtapeApp {
     this.btnQuickSignIn = document.getElementById('btnQuickSignIn');
     this.selectedQuickAvatar = '🎧';
 
-    // Creator Sections & Hero
+    // Creator Hero & Cards
     this.creatorHero = document.querySelector('.creator-hero');
-    this.sectionCardNames = document.getElementById('sectionCardNames');
-    this.sectionCardColors = document.getElementById('sectionCardColors');
-    this.sectionCardLetter = document.getElementById('sectionCardLetter');
-    this.sectionCardTracklist = document.getElementById('sectionCardTracklist');
-    this.sectionCardLock = document.getElementById('sectionCardLock');
-    this.btnLockAndShare = document.getElementById('btnLockAndShare');
+    this.creatorCtaCard = document.getElementById('creatorCtaCard');
     this.recipientOverviewCard = document.getElementById('recipientOverviewCard');
     this.recipientOverviewText = document.getElementById('recipientOverviewText');
     this.btnRecipientReadLetter = document.getElementById('btnRecipientReadLetter');
+    this.studioLockNotice = document.getElementById('studioLockNotice');
 
     // Cassette Elements
     this.cassetteFlipper = document.getElementById('cassetteFlipper');
@@ -464,10 +460,8 @@ class MixtapeApp {
     if (this.isRecipientMode) {
       document.body.classList.add('recipient-mode');
       if (this.creatorHero) this.creatorHero.style.display = 'none';
-      if (this.sectionCardNames) this.sectionCardNames.style.display = 'none';
-      if (this.sectionCardColors) this.sectionCardColors.style.display = 'none';
-      if (this.sectionCardLetter) this.sectionCardLetter.style.display = 'none';
-      if (this.sectionCardLock) this.sectionCardLock.style.display = 'none';
+      if (this.creatorCtaCard) this.creatorCtaCard.style.display = 'none';
+      if (this.btnCreateMixtape) this.btnCreateMixtape.style.display = 'none';
       if (this.btnOpenAddSong) this.btnOpenAddSong.style.display = 'none';
 
       if (this.recipientOverviewCard) {
@@ -482,10 +476,8 @@ class MixtapeApp {
     } else {
       document.body.classList.remove('recipient-mode');
       if (this.creatorHero) this.creatorHero.style.display = 'block';
-      if (this.sectionCardNames) this.sectionCardNames.style.display = 'block';
-      if (this.sectionCardColors) this.sectionCardColors.style.display = 'block';
-      if (this.sectionCardLetter) this.sectionCardLetter.style.display = 'block';
-      if (this.sectionCardLock) this.sectionCardLock.style.display = 'flex';
+      if (this.creatorCtaCard) this.creatorCtaCard.style.display = 'flex';
+      if (this.btnCreateMixtape) this.btnCreateMixtape.style.display = 'inline-flex';
       if (this.btnOpenAddSong) this.btnOpenAddSong.style.display = 'inline-flex';
       if (this.recipientOverviewCard) this.recipientOverviewCard.style.display = 'none';
 
@@ -811,6 +803,25 @@ class MixtapeApp {
       const link = ShareEngine.encodeToHash(this.data, true);
       this.inputStudioShareLink.value = link;
       this.studioCopySuccess.style.display = 'none';
+
+      // Auto-save to library if logged in
+      if (authManager.user) {
+        authManager.saveMixtapeToLibrary(this.data);
+      }
+
+      if (this.studioLockNotice) {
+        if (authManager.user) {
+          this.studioLockNotice.style.background = 'rgba(16, 185, 129, 0.15)';
+          this.studioLockNotice.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+          this.studioLockNotice.style.color = '#34d399';
+          this.studioLockNotice.innerHTML = `✓ <strong>Saved to your Library (${this._escapeHTML(authManager.user.name)})!</strong> You can update this tape anytime from "My Mixtapes". When recipients open your link, it is sealed as a gift.`;
+        } else {
+          this.studioLockNotice.style.background = 'rgba(244, 63, 94, 0.12)';
+          this.studioLockNotice.style.border = '1px solid rgba(244, 63, 94, 0.35)';
+          this.studioLockNotice.style.color = '#fca5a5';
+          this.studioLockNotice.innerHTML = `🔒 <strong>Guest Link Sealed:</strong> Once shared, this mixtape is locked and permanent! Sign in at top right if you wish to edit later.`;
+        }
+      }
     } else {
       this.btnStudioNext.textContent = 'Next →';
     }

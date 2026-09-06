@@ -898,28 +898,96 @@ body {
   line-height: 1.5;
 }
 
-/* Studio Section Cards */
-.creator-studio-panel {
+/* Glowing Header CTA Button */
+.primary-glow-btn {
+  background: linear-gradient(135deg, #f43f5e, #ec4899) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 15px rgba(244, 63, 94, 0.4);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.primary-glow-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 22px rgba(244, 63, 94, 0.7);
+}
+
+/* Playlist Column Header Row */
+.playlist-header-row {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+/* Creator Quick Action Card at bottom of playlist */
+.creator-cta-card {
+  background: linear-gradient(145deg, rgba(244, 63, 94, 0.12), rgba(225, 29, 72, 0.06));
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 16px;
+  margin-top: 16px;
+  backdrop-filter: blur(10px);
 }
 
-.studio-header-box {
-  border-bottom: 1px solid var(--card-border);
-  padding-bottom: 12px;
+@media (max-width: 600px) {
+  .creator-cta-card {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
 }
 
-.studio-title {
-  font-family: 'Shrikhand', cursive;
-  font-size: 1.35rem;
+.cta-card-title {
+  font-size: 1rem;
+  font-weight: 800;
   color: #ffffff;
 }
 
-.studio-desc {
-  font-size: 0.85rem;
+.cta-card-desc {
+  font-size: 0.8rem;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* Studio Wizard Tabs */
+.studio-step-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #334155;
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+
+.studio-tab-btn {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.studio-tab-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.studio-tab-btn.active {
+  color: #ffffff;
+  background: var(--primary-accent);
+  border-color: var(--primary-accent);
 }
 
 .studio-section-card {

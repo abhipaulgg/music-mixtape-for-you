@@ -15,9 +15,9 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- Stylesheets with Cache Busting -->
-  <link rel="stylesheet" href="css/style.css?v=3.1">
-  <link rel="stylesheet" href="css/cassette.css?v=3.1">
-  <link rel="stylesheet" href="css/gift-mode.css?v=3.1">
+  <link rel="stylesheet" href="css/style.css?v=3.2">
+  <link rel="stylesheet" href="css/cassette.css?v=3.2">
+  <link rel="stylesheet" href="css/gift-mode.css?v=3.2">
 </head>
 <body>
 
@@ -32,6 +32,11 @@
     </div>
     
     <div class="header-actions">
+      <!-- Create a Mixtape prominent button -->
+      <button class="nav-btn primary-glow-btn" id="btnCreateMixtape" title="Create and customize your mixtape">
+        <span>✨</span> Create a Mixtape
+      </button>
+
       <!-- Authentication & Profile Area -->
       <div id="googleAuthArea">
         <button class="nav-btn secondary-btn" id="btnOpenSignInModal" style="display: flex; align-items: center; gap: 6px;">
@@ -238,66 +243,41 @@
 
       </section>
 
-      <!-- Right Column: Interactive Mixtape Studio & Song Builder -->
-      <section class="playlist-column creator-studio-panel">
+      <!-- Right Column: Tracklist & Action Deck (Clean, Retro & Uncluttered) -->
+      <section class="playlist-column">
         
-        <div class="studio-header-box">
-          <h3 class="studio-title">Tape Customizer & Tracklist</h3>
-          <p class="studio-desc">Customize details, colors, and songs below. Updates appear live on your tape!</p>
+        <div class="playlist-header-row">
+          <!-- Side A vs Side B Tabs -->
+          <div class="side-tabs">
+            <button class="side-tab-btn active" id="tabSideA">
+              <span>SIDE A</span>
+              <span class="side-tab-badge" id="sideACount">0 tracks</span>
+            </button>
+            <button class="side-tab-btn" id="tabSideB">
+              <span>SIDE B</span>
+              <span class="side-tab-badge" id="sideBCount">0 tracks</span>
+            </button>
+          </div>
+
+          <button class="btn btn-primary btn-sm" id="btnOpenAddSong">
+            <span>➕</span> Add Song
+          </button>
         </div>
 
-        <!-- Section 1: Names & Title -->
-        <div class="studio-section-card" id="sectionCardNames">
-          <h4 class="section-card-title">1. Tape Title & Names</h4>
-          <div class="form-row-2">
-            <div class="form-group">
-              <label class="form-label">Mixtape Title</label>
-              <input type="text" class="form-input" id="inputMixtapeTitle" placeholder="e.g., Midnight Memories ✨">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Recipient Name (For)</label>
-              <input type="text" class="form-input" id="inputRecipient" placeholder="e.g., Someone Special">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Your Name (From)</label>
-            <input type="text" class="form-input" id="inputSender" placeholder="e.g., Your Name">
-          </div>
+        <!-- Track List Container -->
+        <div class="tracks-container" id="tracksContainer">
+          <!-- Rendered dynamically by JavaScript -->
         </div>
 
-        <!-- Section 2: Colors & Stickers -->
-        <div class="studio-section-card" id="sectionCardColors">
-          <h4 class="section-card-title">2. Color Aesthetic & Sticker</h4>
-          <div class="form-group">
-            <label class="form-label">Tape Palette</label>
-            <div class="radio-pills" id="themePills">
-              <div class="radio-pill selected" data-value="rose">🌸 Rose Romance</div>
-              <div class="radio-pill" data-value="neon">🌆 90s Neon</div>
-              <div class="radio-pill" data-value="lofi">🌙 Lo-fi Indigo</div>
-              <div class="radio-pill" data-value="vintage">📜 Vintage Warmth</div>
-              <div class="radio-pill" data-value="slate">🎧 Modern Slate</div>
-            </div>
+        <!-- Bottom Quick Action Card (Cozy & Aesthetic) -->
+        <div class="creator-cta-card" id="creatorCtaCard">
+          <div class="cta-card-content">
+            <div class="cta-card-title">✨ Personalize Your Tape</div>
+            <div class="cta-card-desc">Set title, vintage colors, stickers, and your secret love letter.</div>
           </div>
-          <div class="form-group">
-            <label class="form-label">Cassette Sticker</label>
-            <div class="radio-pills" id="stickerPills">
-              <div class="radio-pill selected" data-value="heart">❤️ Heart</div>
-              <div class="radio-pill" data-value="star">⭐ Star</div>
-              <div class="radio-pill" data-value="flower">🌸 Flower</div>
-              <div class="radio-pill" data-value="sparkle">✨ Sparkle</div>
-              <div class="radio-pill" data-value="cat">🐾 Kitty</div>
-              <div class="radio-pill" data-value="note">🎵 Melody</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section 3: Personal Love Letter -->
-        <div class="studio-section-card" id="sectionCardLetter">
-          <h4 class="section-card-title">3. Dedicated Love Letter</h4>
-          <div class="form-group">
-            <label class="form-label">Your Message (Folds out like vintage stationery when they open the gift)</label>
-            <textarea class="form-textarea" id="inputLetter" rows="4" placeholder="Write a heartfelt note for your loved one..."></textarea>
-          </div>
+          <button class="btn btn-lock-generate" id="btnOpenCustomize">
+            <span>🎨</span> Customize Tape
+          </button>
         </div>
 
         <!-- Recipient Overview Card (Visible only when in recipient mode) -->
@@ -314,49 +294,6 @@
               <span>✨</span> Make Your Own Tape
             </a>
           </div>
-        </div>
-
-        <!-- Section 4: Songs List & Quick Add -->
-        <div class="studio-section-card" id="sectionCardTracklist">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h4 class="section-card-title" style="margin-bottom: 0;">4. Tracklist (Side A & B)</h4>
-            <button class="btn btn-primary btn-sm" id="btnOpenAddSong">
-              <span>➕</span> Add Song
-            </button>
-          </div>
-
-          <!-- Side A / Side B Selector Tabs -->
-          <div class="side-tabs">
-            <button class="side-tab-btn active" id="tabSideA">
-              <span>SIDE A</span>
-              <span class="side-tab-badge" id="sideACount">0 tracks</span>
-            </button>
-            <button class="side-tab-btn" id="tabSideB">
-              <span>SIDE B</span>
-              <span class="side-tab-badge" id="sideBCount">0 tracks</span>
-            </button>
-          </div>
-
-          <!-- Track List Container -->
-          <div class="tracks-container" id="tracksContainer">
-            <!-- Rendered dynamically by JavaScript -->
-          </div>
-        </div>
-
-        <!-- Section 5: Lock In & Share CTA -->
-        <div class="lock-in-card" id="sectionCardLock">
-          <div class="lock-in-header">
-            <span class="lock-icon">🔒</span>
-            <div>
-              <div class="lock-title">Ready to Send?</div>
-              <div class="lock-desc">
-                Log in with Google to save and edit this mixtape anytime. If you share as guest, this link will be locked permanently once created!
-              </div>
-            </div>
-          </div>
-          <button class="btn btn-lock-generate" id="btnLockAndShare">
-            <span>✨</span> Lock In & Generate Share Link
-          </button>
         </div>
 
       </section>
@@ -382,7 +319,112 @@
     </div>
   </div>
 
-  <!-- 2. Add Song Modal (YouTube & Real Songs) -->
+  <!-- 2. Creator Studio / Customize Wizard Modal -->
+  <div class="modal-backdrop" id="customizeModal">
+    <div class="modal-box" style="max-width: 620px;">
+      <div class="modal-title">
+        <span id="modalStudioTitle">✨ Create & Customize Mixtape</span>
+        <button class="icon-btn" id="btnCloseCustomize">&times;</button>
+      </div>
+
+      <!-- Studio Step Navigation Tabs -->
+      <div class="studio-step-tabs" id="studioStepTabs">
+        <button class="studio-tab-btn active" data-step="1">1. Who It's For</button>
+        <button class="studio-tab-btn" data-step="2">2. Tape Style</button>
+        <button class="studio-tab-btn" data-step="3">3. Love Letter</button>
+        <button class="studio-tab-btn" data-step="4">4. Lock & Share 🎁</button>
+      </div>
+      
+      <!-- Step 1: Who It's For -->
+      <div class="studio-step-content" id="stepContent1">
+        <div class="form-group">
+          <label class="form-label">Mixtape Title</label>
+          <input type="text" class="form-input" id="inputMixtapeTitle" placeholder="e.g., Midnight Memories ✨">
+          <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 4px; display: block;">Updates live on the cassette tape label!</small>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label class="form-label">Recipient Name (For)</label>
+            <input type="text" class="form-input" id="inputRecipient" placeholder="e.g., Someone Special">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Sender Name (From)</label>
+            <input type="text" class="form-input" id="inputSender" placeholder="e.g., Your Name">
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Cassette Aesthetic & Sticker -->
+      <div class="studio-step-content" id="stepContent2" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Tape Palette Theme</label>
+          <div class="radio-pills" id="themePills">
+            <div class="radio-pill selected" data-value="rose">🌸 Rose Romance</div>
+            <div class="radio-pill" data-value="neon">🌆 90s Neon</div>
+            <div class="radio-pill" data-value="lofi">🌙 Lo-fi Indigo</div>
+            <div class="radio-pill" data-value="vintage">📜 Vintage Warmth</div>
+            <div class="radio-pill" data-value="slate">🎧 Modern Slate</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Decorative Cassette Sticker</label>
+          <div class="radio-pills" id="stickerPills">
+            <div class="radio-pill selected" data-value="heart">❤️ Heart</div>
+            <div class="radio-pill" data-value="star">⭐ Star</div>
+            <div class="radio-pill" data-value="flower">🌸 Flower</div>
+            <div class="radio-pill" data-value="sparkle">✨ Sparkle</div>
+            <div class="radio-pill" data-value="cat">🐾 Kitty</div>
+            <div class="radio-pill" data-value="note">🎵 Melody</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Love Letter -->
+      <div class="studio-step-content" id="stepContent3" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Personal Dedication Letter (Folds out like vintage stationery)</label>
+          <textarea class="form-textarea" id="inputLetter" rows="6" placeholder="Write a heartfelt note for your loved one..."></textarea>
+        </div>
+      </div>
+
+      <!-- Step 4: Lock In & Share Link -->
+      <div class="studio-step-content" id="stepContent4" style="display: none;">
+        <div id="studioLockNotice" style="background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: 10px; padding: 12px; margin-bottom: 16px; font-size: 0.82rem; line-height: 1.4; color: #fca5a5;">
+          🔒 <strong>Guest Link Sealed:</strong> Once shared, this mixtape is locked and permanent! Sign in anytime at top right to save and edit in your library.
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Your Shareable Gift Link</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" class="form-input" id="inputStudioShareLink" readonly>
+            <button class="btn btn-primary" id="btnStudioCopyLink">Copy</button>
+          </div>
+          <span id="studioCopySuccess" style="color: #34d399; font-size: 0.8rem; display: none; margin-top: 4px;">Link copied to clipboard! ✨</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;">
+          <button class="btn btn-whatsapp" id="btnStudioWhatsApp">
+            <span>💬</span> Share on WhatsApp
+          </button>
+          <button class="btn btn-secondary" id="btnStudioPreviewGift">
+            <span>👀</span> Test Recipient Unboxing
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+        <button class="btn btn-secondary" id="btnStudioPrev" style="display: none;">← Back</button>
+        <div style="display: flex; gap: 10px; margin-left: auto;">
+          <button class="btn btn-secondary" id="btnResetDefaults">Reset</button>
+          <button class="btn btn-primary" id="btnStudioNext">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Add Song Modal (YouTube & Real Songs) -->
   <div class="modal-backdrop" id="addSongModal">
     <div class="modal-box" style="max-width: 580px;">
       <div class="modal-title">
@@ -636,6 +678,6 @@
   </div>
 
   <!-- JavaScript Entry Point with Cache Busting -->
-  <script type="module" src="js/app.js?v=3.1"></script>
+  <script type="module" src="js/app.js?v=3.2"></script>
 </body>
 </html>
