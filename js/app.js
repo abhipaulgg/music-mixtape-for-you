@@ -213,6 +213,11 @@ class MixtapeApp {
     this.tabSideA.addEventListener('click', () => this.switchSide('A'));
     this.tabSideB.addEventListener('click', () => this.switchSide('B'));
 
+    // Click memory card to edit current song note
+    this.memoryCard.addEventListener('click', () => {
+      this._editTrackNote(this.currentTrackIndex);
+    });
+
     // Modals open/close
     this.btnOpenLetter.addEventListener('click', () => this._openLetterModal());
     this.btnCloseLetter.addEventListener('click', () => this.letterModal.classList.remove('active'));
@@ -449,16 +454,23 @@ class MixtapeApp {
         </div>
         <div class="track-actions">
           <span class="track-duration">${this._formatTime(track.duration || 180)}</span>
+          <button class="icon-btn edit-note" title="Edit personal note for this song" data-index="${index}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          </button>
           <button class="icon-btn delete" title="Remove track" data-index="${index}">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
           </button>
         </div>
       `;
 
-      // Click to play track
+      // Click to play track or edit
       item.addEventListener('click', (e) => {
         if (e.target.closest('.delete')) {
           this._deleteTrack(index);
+          return;
+        }
+        if (e.target.closest('.edit-note')) {
+          this._editTrackNote(index);
           return;
         }
         this.currentTrackIndex = index;
@@ -468,6 +480,18 @@ class MixtapeApp {
 
       this.tracksContainer.appendChild(item);
     });
+  }
+
+  _editTrackNote(index) {
+    const sideTracks = this.activeSide === 'A' ? this.data.sideA : this.data.sideB;
+    if (!sideTracks || !sideTracks[index]) return;
+    const track = sideTracks[index];
+    const newNote = prompt(`💌 Edit your personal memory note for "${track.title}":`, track.note || '');
+    if (newNote !== null) {
+      track.note = newNote.trim();
+      mixtapeStore.saveMixtape(this.data);
+      this._loadCurrentTrack(this.player.isPlaying);
+    }
   }
 
   async _loadCurrentTrack(autoPlay = false) {
