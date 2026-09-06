@@ -1349,13 +1349,13 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN (TABLET & MOBILE)
+   RESPONSIVE DESIGN (TABLET & MOBILE OPTIMIZATIONS)
    ========================================================================== */
 @media (max-width: 960px) {
   .app-main {
     grid-template-columns: 1fr;
-    gap: 28px;
-    margin: 20px auto 40px;
+    gap: 24px;
+    margin: 16px auto 36px;
     padding: 0 16px;
   }
   
@@ -1365,31 +1365,239 @@ body {
 }
 
 @media (max-width: 640px) {
+  /* Safe area support for modern edge-to-edge mobile screens (notches / home bars) */
+  body {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .ambient-glow {
+    opacity: 0.25; /* soften on mobile screens */
+  }
+
+  /* Step 1: Gift Landing Screen Mobile Optimization */
+  .gift-landing-overlay {
+    padding: 20px 16px;
+  }
+
+  .gift-landing-box {
+    max-width: 100%;
+    padding: 10px 0;
+  }
+
+  .gift-landing-title {
+    font-size: 2.1rem;
+  }
+
+  .gift-landing-sub {
+    font-size: 1.55rem;
+  }
+
+  .gift-box-visual {
+    transform: scale(0.95);
+  }
+
+  .btn-open-gift {
+    width: 100%;
+    max-width: 280px;
+    padding: 14px 24px;
+    font-size: 1.05rem;
+  }
+
+  /* Step 2: Dedication Letter Mobile Optimization */
+  .letter-dialog {
+    max-width: 94vw;
+    margin: auto 8px;
+  }
+
+  .letter-stationery {
+    padding: 22px 18px 16px;
+    max-height: 84vh;
+    border-radius: 14px;
+  }
+
+  .letter-content {
+    font-size: 1.08rem;
+    line-height: 1.55;
+  }
+
+  .letter-washi {
+    width: 90px;
+    height: 18px;
+    top: -10px;
+  }
+
+  /* Step 3: Header & Main Layout */
   .app-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 14px;
-    padding: 14px 16px;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    gap: 10px;
   }
-  
+
+  .brand {
+    gap: 8px;
+  }
+
+  .brand-sparkle {
+    font-size: 1.4rem;
+  }
+
+  .brand-title {
+    font-size: 1.35rem;
+  }
+
+  .brand-subtitle {
+    font-size: 0.75rem;
+  }
+
   .header-actions {
-    width: 100%;
-    overflow-x: auto;
-    padding-bottom: 4px;
+    gap: 8px;
   }
-  
-  .btn-pill {
+
+  .header-actions .btn-pill {
     padding: 8px 14px;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
+    white-space: nowrap;
   }
-  
+
+  .app-main {
+    margin: 12px auto 28px;
+    padding: 0 12px;
+    gap: 20px;
+  }
+
+  /* Player Section */
+  .video-theater-wrapper {
+    padding: 12px;
+    border-radius: 16px;
+  }
+
+  .video-screen-bezel {
+    border-radius: 12px;
+  }
+
+  .now-playing-strip {
+    padding: 14px 4px 10px;
+  }
+
+  .now-playing-badge {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+  }
+
+  .now-playing-title {
+    font-size: 1rem;
+    max-width: 175px;
+  }
+
+  .now-playing-artist {
+    font-size: 0.8rem;
+  }
+
+  /* Transport & Touch Controls */
   .controls-row {
-    flex-wrap: wrap;
-    gap: 12px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 0;
+    gap: 6px;
   }
-  
+
+  .side-indicator {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+
+  .transport-buttons {
+    gap: 16px;
+  }
+
+  .control-btn {
+    padding: 10px; /* generous touch target */
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .control-btn.btn-play-pause {
+    width: 50px;
+    height: 50px;
+  }
+
   .volume-container {
-    width: 100%;
-    justify-content: flex-end;
+    display: none; /* YouTube on mobile OS manages volume via device hardware buttons */
+  }
+
+  /* Note Card On Mobile */
+  .note-stationery-card {
+    padding: 18px 16px 14px;
+    border-radius: 14px;
+    margin-top: 4px;
+  }
+
+  .note-card-body {
+    max-height: 240px; /* comfortable reading height */
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .handwritten-text {
+    font-size: 1.12rem;
+    line-height: 1.55;
+  }
+
+  /* Playlist & Track List On Mobile */
+  .playlist-column {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .playlist-header {
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+  .playlist-title {
+    font-size: 1.2rem;
+  }
+
+  .track-card {
+    padding: 10px 12px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+
+  .track-thumb-wrap {
+    width: 50px;
+    height: 36px;
+  }
+
+  .track-name {
+    font-size: 0.88rem;
+  }
+
+  .track-artist {
+    font-size: 0.74rem;
+  }
+
+  .track-duration {
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .now-playing-title {
+    max-width: 135px;
+  }
+  .brand-title {
+    font-size: 1.2rem;
+  }
+  .btn-open-gift {
+    font-size: 0.95rem;
+    padding: 12px 20px;
   }
 }
