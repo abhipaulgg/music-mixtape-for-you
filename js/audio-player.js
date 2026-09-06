@@ -1,5 +1,5 @@
 // Audio Player Engine with Skeuomorphic Tape Physics & Analog FX
-import { ProceduralLofiEngine } from './preset-songs.js';
+import { ProceduralLofiEngine } from './preset-songs.js?v=2.5';
 
 export class TapeAudioPlayer {
   constructor() {

@@ -1,8 +1,8 @@
 // Main Application Orchestrator
-import { TapeAudioPlayer } from './audio-player.js';
-import { mixtapeStore } from './mixtape-store.js';
-import { ShareEngine } from './share-engine.js';
-import { PRESET_SONGS } from './preset-songs.js';
+import { TapeAudioPlayer } from './audio-player.js?v=2.5';
+import { mixtapeStore } from './mixtape-store.js?v=2.5';
+import { ShareEngine } from './share-engine.js?v=2.5';
+import { PRESET_SONGS } from './preset-songs.js?v=2.5';
 
 class MixtapeApp {
   constructor() {
