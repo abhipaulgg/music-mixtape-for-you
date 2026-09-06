@@ -56,13 +56,11 @@ export class TapeAudioPlayer {
     if (!el) return;
 
     this.ytPlayer = new window.YT.Player('ytPlayerElement', {
-      height: '180',
-      width: '320',
+      height: '100%',
+      width: '100%',
       playerVars: {
         playsinline: 1,
-        controls: 0,
-        disablekb: 1,
-        fs: 0,
+        controls: 1,
         rel: 0,
         modestbranding: 1
       },
@@ -70,6 +68,16 @@ export class TapeAudioPlayer {
         onReady: () => {
           this.isYtReady = true;
           this.ytPlayer.setVolume(this.volume * 100);
+          if (this.pendingYtTrack && this.pendingYtTrack.youtubeId) {
+            if (this.pendingYtAutoPlay) {
+              this.ytPlayer.loadVideoById(this.pendingYtTrack.youtubeId);
+              this.play();
+            } else {
+              this.ytPlayer.cueVideoById(this.pendingYtTrack.youtubeId);
+            }
+            this.pendingYtTrack = null;
+            this.pendingYtAutoPlay = false;
+          }
         },
         onStateChange: (event) => {
           if (event.data === window.YT.PlayerState.PLAYING) {

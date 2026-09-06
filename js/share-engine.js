@@ -3,12 +3,7 @@
 
 export class ShareEngine {
   static getProductionBaseUrl() {
-    // If running on GitHub Pages, use current origin + pathname
-    if (window.location.hostname.includes('github.io')) {
-      return window.location.origin + window.location.pathname;
-    }
-    // If running on localhost or file://, use your live GitHub Pages URL so recipients can open it anywhere!
-    return 'https://abhipaulgg.github.io/music-mixtape-for-you/';
+    return window.location.origin + window.location.pathname;
   }
 
   // Compress and encode mixtape to URL-safe Base64 string
