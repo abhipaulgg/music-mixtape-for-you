@@ -286,36 +286,22 @@ And perhaps that's all this mixtape is trying to say.`,
   }
 
   loadMixtape() {
+    // No browser cache stored: always load fresh default curated mixtape
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && parsed.sideA && parsed.sideB && 
-            parsed.sideA[0]?.note?.includes('Maybe this is where everything begins') &&
-            parsed.letter?.includes("I don't really know how to put you into words")) {
-          return parsed;
-        }
-      }
+      localStorage.clear();
+      sessionStorage.clear();
     } catch (e) {
-      console.warn('Failed to parse saved mixtape, using defaults:', e);
+      // Ignore if third-party storage is restricted
     }
-    const defaultData = this.getDefaultMixtape();
-    this.saveMixtape(defaultData);
-    return defaultData;
+    return this.getDefaultMixtape();
   }
 
   saveMixtape(data) {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (e) {
-      console.error('Failed to save to localStorage:', e);
-    }
+    // No-op: do not store in browser cache
   }
 
   resetMixtape() {
-    const defaultData = this.getDefaultMixtape();
-    this.saveMixtape(defaultData);
-    return defaultData;
+    return this.getDefaultMixtape();
   }
 }
 
