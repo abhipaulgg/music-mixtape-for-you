@@ -3,7 +3,7 @@ import { TapeAudioPlayer } from './audio-player.js?v=2.5';
 import { mixtapeStore } from './mixtape-store.js?v=2.5';
 import { ShareEngine } from './share-engine.js?v=2.5';
 import { PRESET_SONGS } from './preset-songs.js?v=2.5';
-import { authManager } from './auth-manager.js?v=3.0';
+import { authManager } from './auth-manager.js?v=3.1';
 
 class MixtapeApp {
   constructor() {
@@ -49,12 +49,22 @@ class MixtapeApp {
     this.btnOpenShare = document.getElementById('btnOpenShare');
 
     // Google Auth & User Profile Chip
+    this.btnOpenSignInModal = document.getElementById('btnOpenSignInModal');
     this.googleSignInBtn = document.getElementById('googleSignInBtn');
     this.userProfileChip = document.getElementById('userProfileChip');
     this.userAvatar = document.getElementById('userAvatar');
+    this.userAvatarText = document.getElementById('userAvatarText');
     this.userNameText = document.getElementById('userNameText');
     this.btnOpenMyMixtapes = document.getElementById('btnOpenMyMixtapes');
     this.btnSignOut = document.getElementById('btnSignOut');
+
+    // Sign In Modal
+    this.signInModal = document.getElementById('signInModal');
+    this.btnCloseSignIn = document.getElementById('btnCloseSignIn');
+    this.inputQuickAuthName = document.getElementById('inputQuickAuthName');
+    this.quickAvatarPills = document.getElementById('quickAvatarPills');
+    this.btnQuickSignIn = document.getElementById('btnQuickSignIn');
+    this.selectedQuickAvatar = '🎧';
 
     // Creator Sections & Hero
     this.creatorHero = document.querySelector('.creator-hero');
@@ -264,7 +274,15 @@ class MixtapeApp {
     this.btnCloseLetter.addEventListener('click', () => this.letterModal.classList.remove('active'));
     this.btnRecipientReadLetter?.addEventListener('click', () => this._openLetterModal());
 
-    // Google Auth & Saved Library
+    // Auth, Sign In Modal & Saved Library
+    this.btnOpenSignInModal?.addEventListener('click', () => this.signInModal.classList.add('active'));
+    this.btnCloseSignIn?.addEventListener('click', () => this.signInModal.classList.remove('active'));
+
+    this._setupPills(this.quickAvatarPills, (val) => {
+      this.selectedQuickAvatar = val;
+    });
+    this.btnQuickSignIn?.addEventListener('click', () => this._handleQuickSignIn());
+
     authManager.onAuthStateChanged = (user) => this._renderAuthState(user);
     this._renderAuthState(authManager.user);
 
@@ -1083,22 +1101,45 @@ class MixtapeApp {
 
   // ================= GOOGLE AUTH & USER MIXTAPE LIBRARY =================
 
+  _handleQuickSignIn() {
+    const name = this.inputQuickAuthName?.value.trim() || 'Mixtape Creator';
+    const emoji = this.selectedQuickAvatar || '🎧';
+    authManager.quickSignIn(name, emoji);
+    this.signInModal.classList.remove('active');
+    // Save current mixtape under this profile
+    authManager.saveMixtapeToLibrary(this.data);
+  }
+
   _renderAuthState(user) {
     if (user) {
+      if (this.btnOpenSignInModal) this.btnOpenSignInModal.style.display = 'none';
       if (this.googleSignInBtn) this.googleSignInBtn.style.display = 'none';
       if (this.userProfileChip) {
         this.userProfileChip.style.display = 'flex';
-        if (this.userAvatar) this.userAvatar.src = user.avatar || '';
+        if (user.avatar) {
+          if (this.userAvatar) {
+            this.userAvatar.src = user.avatar;
+            this.userAvatar.style.display = 'block';
+          }
+          if (this.userAvatarText) this.userAvatarText.style.display = 'none';
+        } else {
+          if (this.userAvatar) this.userAvatar.style.display = 'none';
+          if (this.userAvatarText) {
+            this.userAvatarText.textContent = user.avatarEmoji || '🎧';
+            this.userAvatarText.style.display = 'inline-block';
+          }
+        }
         if (this.userNameText) this.userNameText.textContent = user.name || 'My Account';
       }
       // If creator's sender name is default or empty, prefill with user's name
-      if (!this.data.sender || this.data.sender === 'Your Closest Friend' || this.data.sender === 'Alex' || this.data.sender === 'Your Friend') {
+      if (!this.data.sender || this.data.sender === 'Your Closest Friend' || this.data.sender === 'Your Friend') {
         this.data.sender = user.name.split(' ')[0] || user.name;
         if (this.inputSender) this.inputSender.value = this.data.sender;
         this._renderCassetteMetadata();
         mixtapeStore.saveMixtape(this.data);
       }
     } else {
+      if (this.btnOpenSignInModal) this.btnOpenSignInModal.style.display = 'flex';
       if (this.googleSignInBtn) this.googleSignInBtn.style.display = 'block';
       if (this.userProfileChip) this.userProfileChip.style.display = 'none';
     }
@@ -1199,12 +1240,16 @@ class MixtapeApp {
       noticeEl.style.background = 'rgba(16, 185, 129, 0.15)';
       noticeEl.style.border = '1px solid rgba(16, 185, 129, 0.4)';
       noticeEl.style.color = '#34d399';
-      noticeEl.innerHTML = `✓ <strong>Saved to your Google Library!</strong> You can revisit and edit this tape anytime from "My Mixtapes". When recipients open your link, it will be sealed as a gift.`;
+      noticeEl.innerHTML = `✓ <strong>Saved to your Library (${this._escapeHTML(authManager.user.name)})!</strong> You can revisit and edit this tape anytime from "My Mixtapes". When recipients open your link, it will be sealed as a gift.`;
     } else {
       noticeEl.style.background = 'rgba(244, 63, 94, 0.12)';
       noticeEl.style.border = '1px solid rgba(244, 63, 94, 0.35)';
       noticeEl.style.color = '#fca5a5';
-      noticeEl.innerHTML = `🔒 <strong>Guest Link Sealed:</strong> Once shared, this mixtape is locked and cannot be edited. <br><em>Tip: Sign in with Google at top right to save and edit this mixtape anytime!</em>`;
+      noticeEl.innerHTML = `🔒 <strong>Guest Link Sealed:</strong> Once shared, this mixtape is locked and cannot be edited. <br>Want to save & edit later? <button id="btnPromptSignIn" style="background: none; border: none; color: #ffffff; text-decoration: underline; cursor: pointer; font-weight: 700; padding: 0; font-size: inherit;">Sign In Here ➔</button>`;
+      noticeEl.querySelector('#btnPromptSignIn')?.addEventListener('click', () => {
+        this.shareModal.classList.remove('active');
+        this.signInModal.classList.add('active');
+      });
     }
 
     this.shareModal.classList.add('active');

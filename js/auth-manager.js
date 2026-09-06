@@ -1,8 +1,9 @@
 // Google Authentication & User Mixtape Library Manager
-// Uses Google Identity Services (GIS) with local fallback
+// Supports Google Identity Services (GIS) + Instant Quick Creator Sign-In
 
-const AUTH_STORAGE_KEY = 'mixtape_google_user';
+const AUTH_STORAGE_KEY = 'mixtape_user_profile';
 const USER_MIXTAPES_KEY = 'mixtape_user_library_';
+const GOOGLE_CLIENT_ID_KEY = 'mixtape_google_client_id';
 
 export class AuthManager {
   constructor() {
@@ -13,45 +14,75 @@ export class AuthManager {
 
   _loadStoredUser() {
     try {
-      const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+      const raw = localStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem('mixtape_google_user');
       return raw ? JSON.parse(raw) : null;
     } catch (e) {
       return null;
     }
   }
 
+  // Quick Sign In (Instant without Google Cloud Console setup)
+  quickSignIn(name = 'Mixtape Creator', avatarEmoji = '🎧') {
+    const cleanName = (name || 'Mixtape Creator').trim();
+    this.user = {
+      id: 'creator_' + (this.user?.id ? this.user.id.replace(/^creator_/, '') : Date.now()),
+      name: cleanName,
+      email: '',
+      avatar: '',
+      avatarEmoji: avatarEmoji || '🎧',
+      authMethod: 'quick'
+    };
+
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(this.user));
+    if (this.onAuthStateChanged) this.onAuthStateChanged(this.user);
+    return this.user;
+  }
+
   _initGIS() {
-    // Wait for Google Identity Services script to be available
+    // Check for Google Identity Services library
+    let attempts = 0;
     const checkGIS = setInterval(() => {
+      attempts++;
       if (window.google && window.google.accounts && window.google.accounts.id) {
         clearInterval(checkGIS);
         this._setupGoogleButton();
+      } else if (attempts > 30) {
+        clearInterval(checkGIS);
       }
     }, 200);
   }
 
   _setupGoogleButton() {
-    const btnContainer = document.getElementById('googleSignInBtn');
-    if (!btnContainer) return;
+    const containers = [
+      document.getElementById('googleSignInBtn'),
+      document.getElementById('googleSignInModalBtn')
+    ].filter(Boolean);
+
+    if (containers.length === 0) return;
 
     try {
+      const clientId = localStorage.getItem(GOOGLE_CLIENT_ID_KEY) ||
+        '1058209849202-e25f82i2a7tks25i311q68g1f4i31t32.apps.googleusercontent.com';
+
       window.google.accounts.id.initialize({
-        // Public client ID for demo/web app auth
-        client_id: '1058209849202-e25f82i2a7tks25i311q68g1f4i31t32.apps.googleusercontent.com',
+        client_id: clientId,
         callback: (response) => this._handleCredentialResponse(response),
         auto_select: false
       });
 
       if (!this.user) {
-        window.google.accounts.id.renderButton(btnContainer, {
-          theme: 'outline',
-          size: 'medium',
-          shape: 'pill',
-          text: 'signin_with'
+        containers.forEach(container => {
+          container.innerHTML = '';
+          window.google.accounts.id.renderButton(container, {
+            theme: 'outline',
+            size: 'medium',
+            shape: 'pill',
+            text: 'signin_with'
+          });
         });
       }
     } catch (e) {
-      console.warn('GIS button render deferred:', e);
+      console.warn('Google Sign-In initialization deferred:', e);
     }
   }
 
@@ -80,8 +111,10 @@ export class AuthManager {
     this.user = {
       id: payload.sub,
       name: payload.name || payload.given_name || 'Mixtape Creator',
-      email: payload.email,
-      avatar: payload.picture || ''
+      email: payload.email || '',
+      avatar: payload.picture || '',
+      avatarEmoji: '🎧',
+      authMethod: 'google'
     };
 
     localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(this.user));
@@ -92,8 +125,11 @@ export class AuthManager {
   signOut() {
     this.user = null;
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem('mixtape_google_user');
     if (window.google && window.google.accounts && window.google.accounts.id) {
-      window.google.accounts.id.disableAutoSelect();
+      try {
+        window.google.accounts.id.disableAutoSelect();
+      } catch (e) {}
     }
     if (this.onAuthStateChanged) this.onAuthStateChanged(null);
   }
@@ -106,7 +142,13 @@ export class AuthManager {
       const existing = this.getUserMixtapes();
       const idx = existing.findIndex(m => m.id === mixtapeData.id);
       
-      const copy = { ...mixtapeData, updatedAt: Date.now(), ownerEmail: this.user.email };
+      const copy = { 
+        ...mixtapeData, 
+        updatedAt: Date.now(), 
+        ownerId: this.user.id,
+        ownerName: this.user.name 
+      };
+
       if (idx >= 0) {
         existing[idx] = copy;
       } else {

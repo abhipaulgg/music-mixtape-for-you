@@ -15,9 +15,9 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 
   <!-- Stylesheets with Cache Busting -->
-  <link rel="stylesheet" href="css/style.css?v=3.0">
-  <link rel="stylesheet" href="css/cassette.css?v=3.0">
-  <link rel="stylesheet" href="css/gift-mode.css?v=3.0">
+  <link rel="stylesheet" href="css/style.css?v=3.1">
+  <link rel="stylesheet" href="css/cassette.css?v=3.1">
+  <link rel="stylesheet" href="css/gift-mode.css?v=3.1">
 </head>
 <body>
 
@@ -32,11 +32,14 @@
     </div>
     
     <div class="header-actions">
-      <!-- Google Auth Profile or Sign-in Button -->
+      <!-- Authentication & Profile Area -->
       <div id="googleAuthArea">
-        <div id="googleSignInBtn"></div>
+        <button class="nav-btn secondary-btn" id="btnOpenSignInModal" style="display: flex; align-items: center; gap: 6px;">
+          <span>👤</span> Sign In
+        </button>
         <div id="userProfileChip" class="user-profile-chip" style="display: none;">
-          <img id="userAvatar" src="" alt="User" class="user-avatar-img">
+          <span id="userAvatarText" style="font-size: 1.1rem;">🎧</span>
+          <img id="userAvatar" src="" alt="User" class="user-avatar-img" style="display: none;">
           <span id="userNameText" class="user-name-text">My Account</span>
           <button class="nav-btn secondary-btn" id="btnOpenMyMixtapes" title="View my saved mixtapes">
             📚 My Mixtapes
@@ -550,6 +553,62 @@
     </div>
   </div>
 
+  <!-- 5. Sign In / Account Modal -->
+  <div class="modal-backdrop" id="signInModal">
+    <div class="modal-box" style="max-width: 480px;">
+      <div class="modal-title">
+        <span>✨ Sign In to Save Your Mixtapes</span>
+        <button class="icon-btn" id="btnCloseSignIn">&times;</button>
+      </div>
+
+      <p style="color: #cbd5e1; font-size: 0.85rem; margin-bottom: 16px; line-height: 1.5;">
+        Signing in creates your personal library so you can edit, update, and manage your custom mixtapes anytime.
+      </p>
+
+      <!-- Quick Instant Sign In -->
+      <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 12px; padding: 16px; margin-bottom: 18px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">
+            🚀 Instant Creator Sign-In
+          </h4>
+          <span style="font-size: 0.7rem; background: #10b981; color: white; padding: 2px 8px; border-radius: 10px; font-weight: 700;">Recommended</span>
+        </div>
+        <p style="font-size: 0.78rem; color: #94a3b8; margin-bottom: 12px;">
+          No Google Cloud setup required! Works instantly in your browser.
+        </p>
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label class="form-label">Your Name / Handle</label>
+          <input type="text" class="form-input" id="inputQuickAuthName" placeholder="e.g. Abhi">
+        </div>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label class="form-label">Choose Avatar Emoji</label>
+          <div class="radio-pills" id="quickAvatarPills">
+            <div class="radio-pill selected" data-value="🎧">🎧 Music</div>
+            <div class="radio-pill" data-value="✨">✨ Sparkle</div>
+            <div class="radio-pill" data-value="🌸">🌸 Rose</div>
+            <div class="radio-pill" data-value="🎸">🎸 Rock</div>
+            <div class="radio-pill" data-value="☕">☕ Cozy</div>
+            <div class="radio-pill" data-value="🐱">🐱 Kitty</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btnQuickSignIn" style="width: 100%; justify-content: center;">
+          <span>✨</span> Sign In & Enable Library
+        </button>
+      </div>
+
+      <!-- Google Sign-In Option -->
+      <div style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 14px;">
+        <h4 style="font-size: 0.88rem; font-weight: 700; color: #cbd5e1; margin-bottom: 10px; text-align: center;">
+          Or Sign In with Google
+        </h4>
+        <div id="googleSignInModalBtn" style="display: flex; justify-content: center; margin-bottom: 12px; min-height: 40px;"></div>
+        <div id="googleAuthHelpNotice" style="background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 10px; font-size: 0.75rem; color: #fde68a; line-height: 1.4;">
+          ℹ️ <strong>Google Authorization Note:</strong> If Google shows <em>"Access blocked: Authorization Error"</em>, it means Google requires your GitHub Pages domain (<code>https://abhipaulgg.github.io</code>) added to Google Cloud OAuth origins. Use <strong>Instant Creator Sign-In</strong> above to start saving immediately!
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= GIFT MODE OVERLAY (RECIPIENT UNWRAPPING) ================= -->
   <div class="gift-overlay hidden" id="giftOverlay">
     <div class="envelope-card">
@@ -577,6 +636,6 @@
   </div>
 
   <!-- JavaScript Entry Point with Cache Busting -->
-  <script type="module" src="js/app.js?v=3.0"></script>
+  <script type="module" src="js/app.js?v=3.1"></script>
 </body>
 </html>
