@@ -1,6 +1,13 @@
 // Audio Player Engine with Skeuomorphic Tape Physics & Analog FX
 import { ProceduralLofiEngine } from './preset-songs.js?v=2.5';
 
+// Invidious instances (ad-free YouTube proxy) — tried in priority order
+const INVIDIOUS_INSTANCES = [
+  'https://invidious.tiekoetter.com',
+  'https://yt.chocolatemoo53.com',
+  'https://invidious.f5.si',
+];
+
 export class TapeAudioPlayer {
   constructor() {
     this.audioElement = new Audio();
@@ -14,10 +21,17 @@ export class TapeAudioPlayer {
     this.isHissActive = true;
     this.proceduralEngine = null;
 
-    // YouTube Player Support
-    this.ytPlayer = null;
+    // Invidious iframe player
+    this.ytPlayer = null;          // holds the <iframe> DOM element
     this.isYtReady = false;
     this.ytPollInterval = null;
+    this._invidiousInstanceIdx = 0;
+    this._invidiousDuration = 180;
+    this._invidiousCurrentTime = 0;
+    this._invidiousState = -1;     // -1 unstarted, 0 ended, 1 playing, 2 paused
+    this._playStartWallTime = null;
+    this._boundMsgHandler = this._onInvidiousMessage.bind(this);
+    window.addEventListener('message', this._boundMsgHandler);
 
     this.currentTrack = null;
     this.isPlaying = false;
@@ -31,109 +45,128 @@ export class TapeAudioPlayer {
     this.onError = null;           // (err) => {}
 
     this._setupAudioListeners();
-    this._initYouTubeAPI();
+    this._initInvidiousPlayer();
   }
 
-  _initYouTubeAPI() {
-    // Check if script already added
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
+  // ─── Invidious Iframe Player ─────────────────────────────────────────────
 
-    const checkYT = setInterval(() => {
-      if (window.YT && window.YT.Player) {
-        clearInterval(checkYT);
-        this._setupYTPlayer();
-      }
-    }, 150);
+  _invidiousBase() {
+    return INVIDIOUS_INSTANCES[this._invidiousInstanceIdx] || INVIDIOUS_INSTANCES[0];
   }
 
-  _setupYTPlayer() {
+  _buildEmbedUrl(videoId, autoplay = 0) {
+    return `${this._invidiousBase()}/embed/${videoId}?autoplay=${autoplay}&controls=1&playsinline=1&enablejsapi=1&rel=0`;
+  }
+
+  _initInvidiousPlayer() {
     const el = document.getElementById('ytPlayerElement');
     if (!el) return;
 
-    const allYtIds = ['vGJTaP6anOU', 'KKQl-pIRQMY', 'tTPZwlKqawY', 'VKJq7FqYa9c', 'GTrvzcwm7tw', 'Y2zc2IeVX_g', 'qZbdZEFsT3U'];
-    this.allYtIds = allYtIds;
+    const iframe = document.createElement('iframe');
+    iframe.id = 'invidiousFrame';
+    iframe.style.cssText = 'width:100%;height:100%;border:none;border-radius:inherit;';
+    iframe.allow = 'autoplay; fullscreen; encrypted-media; picture-in-picture';
+    iframe.allowFullscreen = true;
+    // Load first track in cued (no-autoplay) state
+    iframe.src = this._buildEmbedUrl('vGJTaP6anOU', 0);
 
-    this.ytPlayer = new window.YT.Player('ytPlayerElement', {
-      height: '100%',
-      width: '100%',
-      host: 'https://www.youtube-nocookie.com',
-      playerVars: {
-        playsinline: 1,
-        controls: 1,
-        rel: 0,
-        modestbranding: 1,
-        iv_load_policy: 3,
-        origin: window.location.origin
-      },
-      events: {
-        onReady: () => {
-          this.isYtReady = true;
-          this.ytPlayer.setVolume(this.volume * 100);
-          
-          // Pre-cue the complete 7-song playlist on the player so YouTube treats it as an internal playlist transition
-          try {
-            if (typeof this.ytPlayer.cuePlaylist === 'function') {
-              this.ytPlayer.cuePlaylist({ playlist: this.allYtIds, index: 0, startSeconds: 0 });
-            }
-          } catch (e) {
-            console.warn('Playlist cue failed:', e);
-          }
+    el.innerHTML = '';
+    el.appendChild(iframe);
+    this.ytPlayer = iframe;
 
-          if (this.pendingYtTrack && this.pendingYtTrack.youtubeId) {
-            const trackIdx = this.allYtIds.indexOf(this.pendingYtTrack.youtubeId);
-            if (this.pendingYtAutoPlay) {
-              if (trackIdx !== -1 && typeof this.ytPlayer.playVideoAt === 'function') {
-                this.ytPlayer.playVideoAt(trackIdx);
-              } else {
-                this.ytPlayer.loadVideoById(this.pendingYtTrack.youtubeId);
-              }
-              this.play();
-            } else {
-              if (trackIdx !== -1 && typeof this.ytPlayer.playVideoAt === 'function') {
-                // cue at index
-              } else {
-                this.ytPlayer.cueVideoById(this.pendingYtTrack.youtubeId);
-              }
-            }
-            this.pendingYtTrack = null;
-            this.pendingYtAutoPlay = false;
-          }
-        },
-        onStateChange: (event) => {
-          if (event.data === window.YT.PlayerState.PLAYING) {
-            this.isPlaying = true;
-            if (this.onPlayStateChange) this.onPlayStateChange(true);
-            this._startYouTubeProgress();
-          } else if (event.data === window.YT.PlayerState.PAUSED) {
-            this.isPlaying = false;
-            if (this.onPlayStateChange) this.onPlayStateChange(false);
-            this._stopYouTubeProgress();
-          } else if (event.data === window.YT.PlayerState.ENDED) {
-            this.isPlaying = false;
-            this._stopYouTubeProgress();
-            if (this.onPlayStateChange) this.onPlayStateChange(false);
-            if (this.onTrackEnded) this.onTrackEnded();
-          }
-        },
-        onError: (err) => {
-          console.warn('YouTube Player error:', err);
-          this._fallbackToProcedural();
-        }
+    iframe.addEventListener('load', () => {
+      this.isYtReady = true;
+      // Try to set volume via postMessage
+      this._sendCmd('setVolume', [Math.round(this.volume * 100)]);
+      if (this.pendingYtTrack) {
+        this._loadInvidiousVideo(this.pendingYtTrack.youtubeId, this.pendingYtAutoPlay);
+        this.pendingYtTrack = null;
+        this.pendingYtAutoPlay = false;
       }
     });
+
+    // Fallback: if iframe fails (e.g. instance blocked), try next instance
+    iframe.addEventListener('error', () => this._tryNextInstance());
+  }
+
+  _tryNextInstance() {
+    this._invidiousInstanceIdx = (this._invidiousInstanceIdx + 1) % INVIDIOUS_INSTANCES.length;
+    if (this.currentTrack?.youtubeId) {
+      this._loadInvidiousVideo(this.currentTrack.youtubeId, this.isPlaying);
+    }
+  }
+
+  _loadInvidiousVideo(videoId, autoplay = false) {
+    if (!this.ytPlayer) return;
+    this._invidiousCurrentTime = 0;
+    this._invidiousDuration = this.currentTrack?.duration || 180;
+    this._invidiousState = -1;
+    this._playStartWallTime = null;
+    this.ytPlayer.src = this._buildEmbedUrl(videoId, autoplay ? 1 : 0);
+  }
+
+  _sendCmd(func, args = []) {
+    if (!this.ytPlayer?.contentWindow) return;
+    try {
+      this.ytPlayer.contentWindow.postMessage(
+        JSON.stringify({ event: 'command', func, args }), '*'
+      );
+    } catch (_) {}
+  }
+
+  _onInvidiousMessage(event) {
+    let data;
+    try {
+      data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+    } catch (_) { return; }
+    if (!data || typeof data !== 'object') return;
+
+    // Invidious fires YouTube-compatible postMessage events
+    const info = data.info ?? {};
+    let state = null;
+
+    if (data.event === 'infoDelivery') {
+      if (typeof info.currentTime === 'number') this._invidiousCurrentTime = info.currentTime;
+      if (typeof info.duration === 'number' && info.duration > 0) this._invidiousDuration = info.duration;
+      if (typeof info.playerState === 'number') state = info.playerState;
+    } else if (data.event === 'onStateChange') {
+      state = typeof data.info === 'number' ? data.info : null;
+    }
+
+    if (state === null) return;
+
+    const prev = this._invidiousState;
+    this._invidiousState = state;
+
+    if (state === 1 && prev !== 1) {          // PLAYING
+      this._playStartWallTime = Date.now();
+      this.isPlaying = true;
+      if (this.onPlayStateChange) this.onPlayStateChange(true);
+      this._startYouTubeProgress();
+    } else if (state === 2 && prev !== 2) {   // PAUSED
+      this.isPlaying = false;
+      if (this.onPlayStateChange) this.onPlayStateChange(false);
+      this._stopYouTubeProgress();
+    } else if (state === 0) {                 // ENDED
+      this.isPlaying = false;
+      this._stopYouTubeProgress();
+      if (this.onPlayStateChange) this.onPlayStateChange(false);
+      if (this.onTrackEnded) this.onTrackEnded();
+    }
   }
 
   _startYouTubeProgress() {
     this._stopYouTubeProgress();
+    this._playStartWallTime = this._playStartWallTime || Date.now();
+    const startedAt = this._playStartWallTime;
+    const baseTime = this._invidiousCurrentTime;
+
     this.ytPollInterval = setInterval(() => {
-      if (!this.ytPlayer || !this.isPlaying || typeof this.ytPlayer.getCurrentTime !== 'function') return;
-      const currentTime = this.ytPlayer.getCurrentTime() || 0;
-      const duration = this.ytPlayer.getDuration() || this.currentTrack?.duration || 180;
+      if (!this.isPlaying) return;
+      // Use wall-clock increment from when play started to estimate current time
+      const elapsed = (Date.now() - startedAt) / 1000;
+      const currentTime = Math.min(baseTime + elapsed, this._invidiousDuration);
+      const duration = this._invidiousDuration || this.currentTrack?.duration || 180;
       const progressPercent = duration > 0 ? Math.min(100, (currentTime / duration) * 100) : 0;
       if (this.onTimeUpdate) {
         this.onTimeUpdate({ currentTime, duration, progressPercent });
@@ -334,33 +367,29 @@ export class TapeAudioPlayer {
     this._stopYouTubeProgress();
     if (this.proceduralEngine) this.proceduralEngine.stop();
 
-    // If switching from YouTube or to YouTube
     if (track.source === 'youtube' && track.youtubeId) {
       this.audioElement.pause();
-      if (this.ytPlayer) {
-        const trackIdx = this.allYtIds ? this.allYtIds.indexOf(track.youtubeId) : -1;
+      if (this.isYtReady && this.ytPlayer) {
+        // Load the Invidious embed for this video
+        this._loadInvidiousVideo(track.youtubeId, autoPlay);
         if (autoPlay) {
-          if (trackIdx !== -1 && typeof this.ytPlayer.playVideoAt === 'function') {
-            this.ytPlayer.playVideoAt(trackIdx);
-          } else if (typeof this.ytPlayer.loadVideoById === 'function') {
-            this.ytPlayer.loadVideoById(track.youtubeId);
-          }
-          this.play();
+          this.isPlaying = true;
+          if (this.onPlayStateChange) this.onPlayStateChange(true);
+          this._startYouTubeProgress();
         } else {
-          if (typeof this.ytPlayer.cueVideoById === 'function') {
-            this.ytPlayer.cueVideoById(track.youtubeId);
+          if (this.onTimeUpdate) {
+            this.onTimeUpdate({ currentTime: 0, duration: track.duration || 180, progressPercent: 0 });
           }
         }
       } else {
-        // YT not ready yet, queue it
+        // Invidious not ready yet — queue it
         this.pendingYtTrack = track;
         this.pendingYtAutoPlay = autoPlay;
       }
     } else {
       // Regular audio track (preset or uploaded or url)
-      if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
-        try { this.ytPlayer.pauseVideo(); } catch (e) {}
-      }
+      // Pause Invidious iframe if it's playing
+      if (this.ytPlayer) this._sendCmd('pauseVideo');
 
       if (track.url) {
         this.audioElement.src = track.url;
@@ -389,8 +418,8 @@ export class TapeAudioPlayer {
     this.isPlaying = true;
 
     if (this.currentTrack?.source === 'youtube' && this.currentTrack?.youtubeId) {
-      if (this.ytPlayer && typeof this.ytPlayer.playVideo === 'function') {
-        this.ytPlayer.playVideo();
+      if (this.ytPlayer) {
+        this._sendCmd('playVideo');
         this._startYouTubeProgress();
       }
       if (this.onPlayStateChange) this.onPlayStateChange(true);
@@ -422,9 +451,7 @@ export class TapeAudioPlayer {
 
     if (this.currentTrack?.source === 'youtube') {
       this._stopYouTubeProgress();
-      if (this.ytPlayer && typeof this.ytPlayer.pauseVideo === 'function') {
-        try { this.ytPlayer.pauseVideo(); } catch (e) {}
-      }
+      if (this.ytPlayer) this._sendCmd('pauseVideo');
     } else if (this.isProceduralActive) {
       this._stopProceduralProgress();
       if (this.proceduralEngine) this.proceduralEngine.stop();
@@ -445,11 +472,13 @@ export class TapeAudioPlayer {
 
   seek(percent) {
     if (this.currentTrack?.source === 'youtube') {
-      const duration = (this.ytPlayer && typeof this.ytPlayer.getDuration === 'function' && this.ytPlayer.getDuration()) || this.currentTrack?.duration || 180;
+      const duration = this._invidiousDuration || this.currentTrack?.duration || 180;
       const targetTime = (percent / 100) * duration;
-      if (this.ytPlayer && typeof this.ytPlayer.seekTo === 'function') {
-        this.ytPlayer.seekTo(targetTime, true);
-      }
+      // Seek via postMessage
+      if (this.ytPlayer) this._sendCmd('seekTo', [targetTime, true]);
+      // Sync wall-clock base time for progress tracking
+      this._invidiousCurrentTime = targetTime;
+      this._playStartWallTime = Date.now();
       if (this.onTimeUpdate) {
         this.onTimeUpdate({ currentTime: targetTime, duration, progressPercent: percent });
       }
@@ -471,9 +500,8 @@ export class TapeAudioPlayer {
   setVolume(val) {
     this.volume = Math.max(0, Math.min(1, val));
     this.audioElement.volume = this.volume;
-    if (this.ytPlayer && typeof this.ytPlayer.setVolume === 'function') {
-      try { this.ytPlayer.setVolume(this.volume * 100); } catch (e) {}
-    }
+    // Set volume on Invidious iframe via postMessage
+    if (this.ytPlayer) this._sendCmd('setVolume', [Math.round(this.volume * 100)]);
     if (this.proceduralEngine) {
       this.proceduralEngine.setVolume(this.volume);
     }

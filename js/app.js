@@ -1,6 +1,6 @@
 // Main Application Orchestrator (Single-Page Curvy Aesthetic Mixtape)
-import { TapeAudioPlayer } from './audio-player.js?v=6.0';
-import { mixtapeStore } from './mixtape-store.js?v=6.0';
+import { TapeAudioPlayer } from './audio-player.js?v=7.0';
+import { mixtapeStore } from './mixtape-store.js?v=7.0';
 
 class SinglePageMixtapeApp {
   constructor() {
