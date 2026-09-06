@@ -1349,13 +1349,13 @@ body {
 }
 
 /* ==========================================================================
-   RESPONSIVE DESIGN (TABLET & MOBILE OPTIMIZATIONS)
+   RESPONSIVE DESIGN (IMMERSIVE MOBILE EXPERIENCE)
    ========================================================================== */
 @media (max-width: 960px) {
   .app-main {
     grid-template-columns: 1fr;
-    gap: 24px;
-    margin: 16px auto 36px;
+    gap: 22px;
+    margin: 14px auto 36px;
     padding: 0 16px;
   }
   
@@ -1365,7 +1365,7 @@ body {
 }
 
 @media (max-width: 640px) {
-  /* Safe area support for modern edge-to-edge mobile screens (notches / home bars) */
+  /* Safe area support for edge-to-edge mobile screens */
   body {
     padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
@@ -1375,17 +1375,16 @@ body {
   }
 
   .ambient-glow {
-    opacity: 0.25; /* soften on mobile screens */
+    opacity: 0.22;
   }
 
-  /* Step 1: Gift Landing Screen Mobile Optimization */
+  /* Step 1: Gift Landing Screen Mobile */
   .gift-landing-overlay {
-    padding: 20px 16px;
+    padding: 24px 16px;
   }
 
   .gift-landing-box {
     max-width: 100%;
-    padding: 10px 0;
   }
 
   .gift-landing-title {
@@ -1396,18 +1395,14 @@ body {
     font-size: 1.55rem;
   }
 
-  .gift-box-visual {
-    transform: scale(0.95);
-  }
-
   .btn-open-gift {
     width: 100%;
-    max-width: 280px;
+    max-width: 270px;
     padding: 14px 24px;
     font-size: 1.05rem;
   }
 
-  /* Step 2: Dedication Letter Mobile Optimization */
+  /* Step 2: Dedication Letter Mobile */
   .letter-dialog {
     max-width: 94vw;
     margin: auto 8px;
@@ -1416,27 +1411,28 @@ body {
   .letter-stationery {
     padding: 22px 18px 16px;
     max-height: 84vh;
-    border-radius: 14px;
+    border-radius: 16px;
   }
 
   .letter-content {
-    font-size: 1.08rem;
+    font-size: 1.06rem;
     line-height: 1.55;
   }
 
-  .letter-washi {
-    width: 90px;
-    height: 18px;
-    top: -10px;
-  }
-
-  /* Step 3: Header & Main Layout */
+  /* Step 3: Immersive Sleek Header (Glassmorphic & Elegant) */
   .app-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
     flex-direction: row;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    gap: 10px;
+    justify-content: space-between;
+    padding: 10px 16px;
+    background: rgba(14, 11, 20, 0.72);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(246, 196, 146, 0.08);
   }
 
   .brand {
@@ -1444,37 +1440,48 @@ body {
   }
 
   .brand-sparkle {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
   }
 
   .brand-title {
-    font-size: 1.35rem;
+    font-size: 1.22rem;
+    letter-spacing: 0.2px;
   }
 
   .brand-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
+    color: var(--accent-rose);
+    opacity: 0.9;
+    margin-top: 0px;
   }
 
   .header-actions {
-    gap: 8px;
+    display: flex;
+    align-items: center;
   }
 
   .header-actions .btn-pill {
-    padding: 8px 14px;
-    font-size: 0.8rem;
-    white-space: nowrap;
+    padding: 7px 14px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(226, 141, 132, 0.28);
   }
 
+  /* Main App Container on Mobile */
   .app-main {
-    margin: 12px auto 28px;
+    margin: 8px auto 32px;
     padding: 0 12px;
-    gap: 20px;
+    gap: 16px;
   }
 
-  /* Player Section */
+  /* Video Theater & Player */
   .video-theater-wrapper {
     padding: 12px;
-    border-radius: 16px;
+    border-radius: 18px;
+    background: rgba(26, 19, 38, 0.68);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5), 0 0 20px rgba(226, 141, 132, 0.12);
   }
 
   .video-screen-bezel {
@@ -1482,36 +1489,59 @@ body {
   }
 
   .now-playing-strip {
-    padding: 14px 4px 10px;
+    padding: 12px 2px 10px;
+    gap: 8px;
+  }
+
+  .now-playing-info {
+    gap: 10px;
   }
 
   .now-playing-badge {
-    font-size: 0.68rem;
+    font-size: 0.65rem;
     padding: 3px 8px;
   }
 
   .now-playing-title {
-    font-size: 1rem;
-    max-width: 175px;
+    font-size: 0.98rem;
+    max-width: 170px;
   }
 
   .now-playing-artist {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
   }
 
-  /* Transport & Touch Controls */
+  .equalizer-bars {
+    height: 18px;
+    gap: 2.5px;
+  }
+
+  .equalizer-bars .bar {
+    width: 3px;
+  }
+
+  /* Scrubber & Controls */
+  .player-controls {
+    padding-top: 10px;
+    gap: 10px;
+  }
+
+  .time-label {
+    font-size: 0.72rem;
+    min-width: 28px;
+  }
+
   .controls-row {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    padding: 6px 0;
-    gap: 6px;
+    padding: 4px 0 2px;
   }
 
   .side-indicator {
-    font-size: 0.75rem;
-    padding: 3px 8px;
+    font-size: 0.72rem;
+    padding: 3px 9px;
   }
 
   .transport-buttons {
@@ -1519,85 +1549,140 @@ body {
   }
 
   .control-btn {
-    padding: 10px; /* generous touch target */
-    min-width: 44px;
-    min-height: 44px;
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
   }
 
   .control-btn.btn-play-pause {
-    width: 50px;
-    height: 50px;
+    width: 48px;
+    height: 48px;
   }
 
   .volume-container {
-    display: none; /* YouTube on mobile OS manages volume via device hardware buttons */
+    display: none;
   }
 
-  /* Note Card On Mobile */
+  /* Handwritten Note Stationery Card */
   .note-stationery-card {
     padding: 18px 16px 14px;
-    border-radius: 14px;
-    margin-top: 4px;
+    border-radius: 16px;
+    transform: none; /* remove desktop tilt for better mobile screen usage */
+    margin-top: 2px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  }
+
+  .note-stationery-card:hover {
+    transform: none;
+  }
+
+  .washi-tape {
+    width: 76px;
+    height: 18px;
+    top: -9px;
+  }
+
+  .note-card-header {
+    padding-bottom: 7px;
+    margin-bottom: 9px;
+  }
+
+  .note-header-title {
+    font-size: 0.74rem;
   }
 
   .note-card-body {
-    max-height: 240px; /* comfortable reading height */
+    max-height: 220px;
     -webkit-overflow-scrolling: touch;
+    padding-right: 4px;
   }
 
   .handwritten-text {
-    font-size: 1.12rem;
-    line-height: 1.55;
+    font-size: 1.1rem;
+    line-height: 1.52;
   }
 
-  /* Playlist & Track List On Mobile */
+  /* Playlist & Track List */
   .playlist-column {
-    padding: 16px 14px;
-    border-radius: 16px;
+    padding: 16px 12px;
+    border-radius: 18px;
+    background: rgba(26, 19, 38, 0.68);
   }
 
   .playlist-header {
     padding-bottom: 12px;
     margin-bottom: 12px;
+    gap: 8px;
   }
 
   .playlist-title {
-    font-size: 1.2rem;
+    font-size: 1.18rem;
+  }
+
+  .playlist-count {
+    font-size: 0.75rem;
+  }
+
+  .side-tabs {
+    padding: 2px;
+  }
+
+  .side-tab {
+    font-size: 0.72rem;
+    padding: 4px 10px;
+  }
+
+  .tracklist-container {
+    gap: 8px;
   }
 
   .track-card {
-    padding: 10px 12px;
+    padding: 9px 12px;
     gap: 12px;
     border-radius: 12px;
   }
 
+  .track-card:hover {
+    transform: none; /* smoother on mobile touch */
+  }
+
   .track-thumb-wrap {
-    width: 50px;
-    height: 36px;
+    width: 48px;
+    height: 35px;
   }
 
   .track-name {
-    font-size: 0.88rem;
+    font-size: 0.86rem;
   }
 
   .track-artist {
+    font-size: 0.72rem;
+  }
+
+  .track-note-preview {
     font-size: 0.74rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 170px;
   }
 
   .track-duration {
-    font-size: 0.74rem;
+    font-size: 0.72rem;
   }
 }
 
 @media (max-width: 380px) {
-  .now-playing-title {
-    max-width: 135px;
-  }
   .brand-title {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
   }
-  .btn-open-gift {
-    font-size: 0.95rem;
-    padding: 12px 20px;
+  .now-playing-title {
+    max-width: 125px;
+  }
+  .btn-letter-text {
+    display: none; /* On tiny screens, show icon 💌 cleanly */
+  }
+  .header-actions .btn-pill {
+    padding: 6px 10px;
   }
 }
