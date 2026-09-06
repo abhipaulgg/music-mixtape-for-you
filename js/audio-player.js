@@ -55,6 +55,9 @@ export class TapeAudioPlayer {
     const el = document.getElementById('ytPlayerElement');
     if (!el) return;
 
+    const allYtIds = ['vGJTaP6anOU', 'KKQl-pIRQMY', 'tTPZwlKqawY', 'VKJq7FqYa9c', 'GTrvzcwm7tw', 'Y2zc2IeVX_g', 'qZbdZEFsT3U'];
+    this.allYtIds = allYtIds;
+
     this.ytPlayer = new window.YT.Player('ytPlayerElement', {
       height: '100%',
       width: '100%',
@@ -71,12 +74,31 @@ export class TapeAudioPlayer {
         onReady: () => {
           this.isYtReady = true;
           this.ytPlayer.setVolume(this.volume * 100);
+          
+          // Pre-cue the complete 7-song playlist on the player so YouTube treats it as an internal playlist transition
+          try {
+            if (typeof this.ytPlayer.cuePlaylist === 'function') {
+              this.ytPlayer.cuePlaylist({ playlist: this.allYtIds, index: 0, startSeconds: 0 });
+            }
+          } catch (e) {
+            console.warn('Playlist cue failed:', e);
+          }
+
           if (this.pendingYtTrack && this.pendingYtTrack.youtubeId) {
+            const trackIdx = this.allYtIds.indexOf(this.pendingYtTrack.youtubeId);
             if (this.pendingYtAutoPlay) {
-              this.ytPlayer.loadVideoById(this.pendingYtTrack.youtubeId);
+              if (trackIdx !== -1 && typeof this.ytPlayer.playVideoAt === 'function') {
+                this.ytPlayer.playVideoAt(trackIdx);
+              } else {
+                this.ytPlayer.loadVideoById(this.pendingYtTrack.youtubeId);
+              }
               this.play();
             } else {
-              this.ytPlayer.cueVideoById(this.pendingYtTrack.youtubeId);
+              if (trackIdx !== -1 && typeof this.ytPlayer.playVideoAt === 'function') {
+                // cue at index
+              } else {
+                this.ytPlayer.cueVideoById(this.pendingYtTrack.youtubeId);
+              }
             }
             this.pendingYtTrack = null;
             this.pendingYtAutoPlay = false;
@@ -315,12 +337,19 @@ export class TapeAudioPlayer {
     // If switching from YouTube or to YouTube
     if (track.source === 'youtube' && track.youtubeId) {
       this.audioElement.pause();
-      if (this.ytPlayer && typeof this.ytPlayer.cueVideoById === 'function') {
+      if (this.ytPlayer) {
+        const trackIdx = this.allYtIds ? this.allYtIds.indexOf(track.youtubeId) : -1;
         if (autoPlay) {
-          this.ytPlayer.loadVideoById(track.youtubeId);
+          if (trackIdx !== -1 && typeof this.ytPlayer.playVideoAt === 'function') {
+            this.ytPlayer.playVideoAt(trackIdx);
+          } else if (typeof this.ytPlayer.loadVideoById === 'function') {
+            this.ytPlayer.loadVideoById(track.youtubeId);
+          }
           this.play();
         } else {
-          this.ytPlayer.cueVideoById(track.youtubeId);
+          if (typeof this.ytPlayer.cueVideoById === 'function') {
+            this.ytPlayer.cueVideoById(track.youtubeId);
+          }
         }
       } else {
         // YT not ready yet, queue it
