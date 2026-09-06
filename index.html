@@ -28,6 +28,9 @@
       </div>
     </div>
     <div class="header-actions">
+      <button class="nav-btn create-mixtape-btn" id="btnCreateMixtape">
+        <span>✨</span> Create a Mixtape
+      </button>
       <button class="nav-btn" id="btnOpenLetter">
         <span>💌</span> Read Letter
       </button>
@@ -258,60 +261,107 @@
     </div>
   </div>
 
-  <!-- 2. Customize Mixtape Modal -->
+  <!-- 2. Create & Customize Mixtape Studio Modal -->
   <div class="modal-backdrop" id="customizeModal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 620px;">
       <div class="modal-title">
-        <span>Customize Your Mixtape</span>
+        <span id="modalStudioTitle">✨ Create & Customize Mixtape</span>
         <button class="icon-btn" id="btnCloseCustomize">&times;</button>
       </div>
+
+      <!-- Studio Step Navigation Bar -->
+      <div class="studio-step-tabs" id="studioStepTabs" style="display: flex; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 12px; overflow-x: auto;">
+        <button class="studio-tab-btn active" data-step="1">1. Who It's For</button>
+        <button class="studio-tab-btn" data-step="2">2. Tape Style</button>
+        <button class="studio-tab-btn" data-step="3">3. Love Letter</button>
+        <button class="studio-tab-btn" data-step="4">4. Get Share Link 🎁</button>
+      </div>
       
-      <div class="form-group">
-        <label class="form-label">Mixtape Title</label>
-        <input type="text" class="form-input" id="inputMixtapeTitle" placeholder="e.g., Late Night Conversations ✨">
-      </div>
+      <!-- Step 1: Who It's For -->
+      <div class="studio-step-content" id="stepContent1">
+        <div class="form-group">
+          <label class="form-label">Mixtape Title</label>
+          <input type="text" class="form-input" id="inputMixtapeTitle" placeholder="e.g., Late Night Conversations ✨">
+          <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 2px; display: block;">Updates live on the cassette tape label!</small>
+        </div>
 
-      <div class="form-group">
-        <label class="form-label">Recipient Name (For)</label>
-        <input type="text" class="form-input" id="inputRecipient" placeholder="e.g., Sarah">
-      </div>
+        <div class="form-group">
+          <label class="form-label">Recipient Name (For)</label>
+          <input type="text" class="form-input" id="inputRecipient" placeholder="e.g., Sarah">
+          <small style="color: #94a3b8; font-size: 0.75rem; margin-top: 2px; display: block;">Displays on the gift envelope and header.</small>
+        </div>
 
-      <div class="form-group">
-        <label class="form-label">Sender Name (From)</label>
-        <input type="text" class="form-input" id="inputSender" placeholder="e.g., Alex">
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Personal Dedication Letter</label>
-        <textarea class="form-textarea" id="inputLetter" rows="4" placeholder="Write a heartfelt note for your loved one..."></textarea>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">Cassette Aesthetic Theme</label>
-        <div class="radio-pills" id="themePills">
-          <div class="radio-pill selected" data-value="rose">🌸 Rose Romance</div>
-          <div class="radio-pill" data-value="neon">🌆 90s Neon</div>
-          <div class="radio-pill" data-value="lofi">🌙 Lo-fi Indigo</div>
-          <div class="radio-pill" data-value="vintage">📜 Vintage Warmth</div>
-          <div class="radio-pill" data-value="slate">🎧 Modern Slate</div>
+        <div class="form-group">
+          <label class="form-label">Sender Name (From)</label>
+          <input type="text" class="form-input" id="inputSender" placeholder="e.g., Alex">
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Decorative Sticker</label>
-        <div class="radio-pills" id="stickerPills">
-          <div class="radio-pill selected" data-value="heart">❤️ Heart</div>
-          <div class="radio-pill" data-value="star">⭐ Star</div>
-          <div class="radio-pill" data-value="flower">🌸 Flower</div>
-          <div class="radio-pill" data-value="sparkle">✨ Sparkle</div>
-          <div class="radio-pill" data-value="cat">🐾 Kitty</div>
-          <div class="radio-pill" data-value="note">🎵 Melody</div>
+      <!-- Step 2: Cassette Aesthetic & Sticker -->
+      <div class="studio-step-content" id="stepContent2" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Cassette Aesthetic Theme</label>
+          <div class="radio-pills" id="themePills">
+            <div class="radio-pill selected" data-value="rose">🌸 Rose Romance</div>
+            <div class="radio-pill" data-value="neon">🌆 90s Neon</div>
+            <div class="radio-pill" data-value="lofi">🌙 Lo-fi Indigo</div>
+            <div class="radio-pill" data-value="vintage">📜 Vintage Warmth</div>
+            <div class="radio-pill" data-value="slate">🎧 Modern Slate</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Decorative Tape Sticker</label>
+          <div class="radio-pills" id="stickerPills">
+            <div class="radio-pill selected" data-value="heart">❤️ Heart</div>
+            <div class="radio-pill" data-value="star">⭐ Star</div>
+            <div class="radio-pill" data-value="flower">🌸 Flower</div>
+            <div class="radio-pill" data-value="sparkle">✨ Sparkle</div>
+            <div class="radio-pill" data-value="cat">🐾 Kitty</div>
+            <div class="radio-pill" data-value="note">🎵 Melody</div>
+          </div>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="btnResetDefaults">Reset to Sample</button>
-        <button class="btn btn-primary" id="btnSaveCustomize">Save Changes</button>
+      <!-- Step 3: Dedication Letter -->
+      <div class="studio-step-content" id="stepContent3" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Personal Dedication Letter (Folds out like vintage stationery)</label>
+          <textarea class="form-textarea" id="inputLetter" rows="6" placeholder="Write a heartfelt letter for your loved one..."></textarea>
+        </div>
+      </div>
+
+      <!-- Step 4: Share Link & Export -->
+      <div class="studio-step-content" id="stepContent4" style="display: none;">
+        <p style="color: #cbd5e1; font-size: 0.9rem; margin-bottom: 16px;">
+          🎉 Your custom mixtape is ready! Copy the link below or send it directly on WhatsApp.
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">Your Unique Mixtape Gift Link</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" class="form-input" id="inputStudioShareLink" readonly>
+            <button class="btn btn-primary" id="btnStudioCopyLink">Copy</button>
+          </div>
+          <span id="studioCopySuccess" style="color: #34d399; font-size: 0.8rem; display: none; margin-top: 4px;">Link copied to clipboard! ✨</span>
+        </div>
+
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;">
+          <button class="btn btn-whatsapp" id="btnStudioWhatsApp">
+            <span>💬</span> Share on WhatsApp
+          </button>
+          <button class="btn btn-secondary" id="btnStudioPreviewGift">
+            <span>👀</span> Test Recipient Unboxing
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px;">
+        <button class="btn btn-secondary" id="btnStudioPrev" style="display: none;">← Back</button>
+        <div style="display: flex; gap: 10px; margin-left: auto;">
+          <button class="btn btn-secondary" id="btnResetDefaults">Reset Defaults</button>
+          <button class="btn btn-primary" id="btnStudioNext">Next →</button>
+        </div>
       </div>
     </div>
   </div>
@@ -435,6 +485,15 @@
           <button class="btn btn-primary" id="btnCopyLink">Copy</button>
         </div>
         <span id="copySuccessNotice" style="color: #34d399; font-size: 0.8rem; display: none; margin-top: 4px;">Link copied to clipboard! ✨</span>
+      </div>
+
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px;">
+        <button class="btn btn-whatsapp" id="btnShareWhatsApp">
+          <span>💬</span> Share on WhatsApp
+        </button>
+        <button class="btn btn-secondary" id="btnPreviewGift">
+          <span>👀</span> Test Recipient Unboxing
+        </button>
       </div>
 
       <div style="border-top: 1px solid #334155; margin: 20px 0 16px;"></div>

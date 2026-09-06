@@ -792,3 +792,66 @@ body {
 .search-select-btn:hover {
   background: var(--primary-accent-light);
 }
+
+/* Prominent Create a Mixtape Button in Header */
+.nav-btn.create-mixtape-btn {
+  background: linear-gradient(135deg, #f43f5e, #ec4899);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 14px rgba(244, 63, 94, 0.45);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  animation: subtleGlow 3s infinite ease-in-out;
+}
+
+@keyframes subtleGlow {
+  0%, 100% { box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4); }
+  50% { box-shadow: 0 4px 22px rgba(236, 72, 153, 0.7); }
+}
+
+.nav-btn.create-mixtape-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: linear-gradient(135deg, #fb7185, #f43f5e);
+}
+
+/* Studio Step Navigation Tabs */
+.studio-tab-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.studio-tab-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
+}
+
+.studio-tab-btn.active {
+  background: var(--primary-accent);
+  color: #ffffff;
+  border-color: var(--primary-accent);
+  box-shadow: 0 2px 8px var(--active-track-glow);
+}
+
+/* WhatsApp Share Button */
+.btn.btn-whatsapp {
+  background: #25d366;
+  color: #ffffff;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
+}
+
+.btn.btn-whatsapp:hover {
+  background: #22bf5b;
+  transform: translateY(-1px);
+}

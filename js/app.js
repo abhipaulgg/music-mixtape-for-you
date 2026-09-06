@@ -36,6 +36,7 @@ class MixtapeApp {
   _cacheDOMElements() {
     // Header & Subtitles
     this.headerSubtitle = document.getElementById('headerSubtitle');
+    this.btnCreateMixtape = document.getElementById('btnCreateMixtape');
     this.btnOpenLetter = document.getElementById('btnOpenLetter');
     this.btnOpenCustomize = document.getElementById('btnOpenCustomize');
     this.btnOpenAddSong = document.getElementById('btnOpenAddSong');
@@ -90,17 +91,30 @@ class MixtapeApp {
     this.letterBody = document.getElementById('letterBody');
     this.letterSenderSignature = document.getElementById('letterSenderSignature');
 
-    // Customize Modal
+    // Creator Studio / Customize Modal
     this.customizeModal = document.getElementById('customizeModal');
     this.btnCloseCustomize = document.getElementById('btnCloseCustomize');
+    this.modalStudioTitle = document.getElementById('modalStudioTitle');
+    this.studioStepTabs = document.getElementById('studioStepTabs');
+    this.stepContent1 = document.getElementById('stepContent1');
+    this.stepContent2 = document.getElementById('stepContent2');
+    this.stepContent3 = document.getElementById('stepContent3');
+    this.stepContent4 = document.getElementById('stepContent4');
     this.inputMixtapeTitle = document.getElementById('inputMixtapeTitle');
     this.inputRecipient = document.getElementById('inputRecipient');
     this.inputSender = document.getElementById('inputSender');
     this.inputLetter = document.getElementById('inputLetter');
     this.themePills = document.getElementById('themePills');
     this.stickerPills = document.getElementById('stickerPills');
-    this.btnSaveCustomize = document.getElementById('btnSaveCustomize');
+    this.inputStudioShareLink = document.getElementById('inputStudioShareLink');
+    this.btnStudioCopyLink = document.getElementById('btnStudioCopyLink');
+    this.studioCopySuccess = document.getElementById('studioCopySuccess');
+    this.btnStudioWhatsApp = document.getElementById('btnStudioWhatsApp');
+    this.btnStudioPreviewGift = document.getElementById('btnStudioPreviewGift');
+    this.btnStudioPrev = document.getElementById('btnStudioPrev');
+    this.btnStudioNext = document.getElementById('btnStudioNext');
     this.btnResetDefaults = document.getElementById('btnResetDefaults');
+    this.currentStudioStep = 1;
 
     // Add Song Modal
     this.addSongModal = document.getElementById('addSongModal');
@@ -144,6 +158,8 @@ class MixtapeApp {
     this.inputShareLink = document.getElementById('inputShareLink');
     this.btnCopyLink = document.getElementById('btnCopyLink');
     this.copySuccessNotice = document.getElementById('copySuccessNotice');
+    this.btnShareWhatsApp = document.getElementById('btnShareWhatsApp');
+    this.btnPreviewGift = document.getElementById('btnPreviewGift');
     this.btnDownloadJSON = document.getElementById('btnDownloadJSON');
     this.inputImportJSON = document.getElementById('inputImportJSON');
 
@@ -201,10 +217,81 @@ class MixtapeApp {
     this.btnOpenLetter.addEventListener('click', () => this._openLetterModal());
     this.btnCloseLetter.addEventListener('click', () => this.letterModal.classList.remove('active'));
 
-    this.btnOpenCustomize.addEventListener('click', () => this._openCustomizeModal());
+    // Create a Mixtape button in header
+    this.btnCreateMixtape.addEventListener('click', () => this._openCreatorStudio(1));
+
+    // Customize button in header
+    this.btnOpenCustomize.addEventListener('click', () => this._openCreatorStudio(1));
     this.btnCloseCustomize.addEventListener('click', () => this.customizeModal.classList.remove('active'));
-    this.btnSaveCustomize.addEventListener('click', () => this._saveCustomizeModal());
     this.btnResetDefaults.addEventListener('click', () => this._resetDefaults());
+
+    // Live Real-Time Updating as user types in Creator Studio
+    this.inputMixtapeTitle.addEventListener('input', () => {
+      const val = this.inputMixtapeTitle.value.trim() || 'Our Special Mixtape ✨';
+      this.data.title = val;
+      this.cassetteTitleTexts.forEach(el => el.textContent = val);
+      mixtapeStore.saveMixtape(this.data);
+    });
+
+    this.inputRecipient.addEventListener('input', () => {
+      const rec = this.inputRecipient.value.trim() || 'Someone Special';
+      this.data.recipient = rec;
+      this.headerSubtitle.textContent = `For ${rec} • From ${this.data.sender || 'Alex'} ❤️`;
+      mixtapeStore.saveMixtape(this.data);
+    });
+
+    this.inputSender.addEventListener('input', () => {
+      const snd = this.inputSender.value.trim() || 'Alex';
+      this.data.sender = snd;
+      this.headerSubtitle.textContent = `For ${this.data.recipient || 'Someone Special'} • From ${snd} ❤️`;
+      mixtapeStore.saveMixtape(this.data);
+    });
+
+    this.inputLetter.addEventListener('input', () => {
+      this.data.letter = this.inputLetter.value;
+      mixtapeStore.saveMixtape(this.data);
+    });
+
+    // Studio Wizard Steps navigation
+    this.studioStepTabs.addEventListener('click', (e) => {
+      const btn = e.target.closest('.studio-tab-btn');
+      if (btn) {
+        const step = parseInt(btn.getAttribute('data-step'), 10);
+        this._goToStudioStep(step);
+      }
+    });
+
+    this.btnStudioNext.addEventListener('click', () => {
+      if (this.currentStudioStep < 4) {
+        this._goToStudioStep(this.currentStudioStep + 1);
+      } else {
+        // Step 4 "Done & Listen"
+        this.customizeModal.classList.remove('active');
+      }
+    });
+
+    this.btnStudioPrev.addEventListener('click', () => {
+      if (this.currentStudioStep > 1) {
+        this._goToStudioStep(this.currentStudioStep - 1);
+      }
+    });
+
+    // Studio Copy & WhatsApp Buttons
+    this.btnStudioCopyLink.addEventListener('click', () => {
+      this.inputStudioShareLink.select();
+      navigator.clipboard.writeText(this.inputStudioShareLink.value).then(() => {
+        this.studioCopySuccess.style.display = 'block';
+        setTimeout(() => this.studioCopySuccess.style.display = 'none', 3000);
+      });
+    });
+
+    this.btnStudioWhatsApp.addEventListener('click', () => {
+      this._shareOnWhatsApp(this.inputStudioShareLink.value);
+    });
+
+    this.btnStudioPreviewGift.addEventListener('click', () => {
+      this._testRecipientUnboxing();
+    });
 
     this.btnOpenAddSong.addEventListener('click', () => this._openAddSongModal());
     this.btnCloseAddSong.addEventListener('click', () => this.addSongModal.classList.remove('active'));
@@ -232,6 +319,8 @@ class MixtapeApp {
     this.btnCloseShare.addEventListener('click', () => this.shareModal.classList.remove('active'));
     this.btnDoneShare.addEventListener('click', () => this.shareModal.classList.remove('active'));
     this.btnCopyLink.addEventListener('click', () => this._copyShareLink());
+    this.btnShareWhatsApp.addEventListener('click', () => this._shareOnWhatsApp());
+    this.btnPreviewGift.addEventListener('click', () => this._testRecipientUnboxing());
     this.btnDownloadJSON.addEventListener('click', () => ShareEngine.downloadJSON(this.data));
     this.inputImportJSON.addEventListener('change', (e) => this._handleImportJSON(e));
 
@@ -242,9 +331,19 @@ class MixtapeApp {
     // Gift unwrap button
     this.btnBreakSeal.addEventListener('click', () => this._unwrapGift());
 
-    // Initialize pill selection behavior
-    this._setupPills(this.themePills);
-    this._setupPills(this.stickerPills);
+    // Initialize pill selection behavior with live updates
+    this._setupPills(this.themePills, (theme) => {
+      this.data.theme = theme;
+      this._applyTheme(theme);
+      mixtapeStore.saveMixtape(this.data);
+    });
+
+    this._setupPills(this.stickerPills, (sticker) => {
+      this.data.sticker = sticker;
+      this._renderCassetteMetadata();
+      mixtapeStore.saveMixtape(this.data);
+    });
+
     this._setupPills(this.addSidePills);
     this._setupPills(this.sourcePills, (val) => this._onSourceChanged(val));
   }
@@ -516,7 +615,7 @@ class MixtapeApp {
     this.letterModal.classList.add('active');
   }
 
-  _openCustomizeModal() {
+  _openCreatorStudio(startStep = 1) {
     this.inputMixtapeTitle.value = this.data.title || '';
     this.inputRecipient.value = this.data.recipient || '';
     this.inputSender.value = this.data.sender || '';
@@ -532,35 +631,64 @@ class MixtapeApp {
       p.classList.toggle('selected', p.getAttribute('data-value') === (this.data.sticker || 'heart'));
     });
 
+    this._goToStudioStep(startStep);
     this.customizeModal.classList.add('active');
   }
 
-  _saveCustomizeModal() {
-    this.data.title = this.inputMixtapeTitle.value.trim() || 'Our Special Mixtape ✨';
-    this.data.recipient = this.inputRecipient.value.trim() || 'Someone Special';
-    this.data.sender = this.inputSender.value.trim() || 'Your Friend';
-    this.data.letter = this.inputLetter.value.trim() || '';
+  _goToStudioStep(step) {
+    this.currentStudioStep = Math.max(1, Math.min(4, step));
 
-    const selectedThemePill = this.themePills.querySelector('.radio-pill.selected');
-    if (selectedThemePill) {
-      this.data.theme = selectedThemePill.getAttribute('data-value');
+    // Toggle tabs
+    this.studioStepTabs.querySelectorAll('.studio-tab-btn').forEach(btn => {
+      const btnStep = parseInt(btn.getAttribute('data-step'), 10);
+      btn.classList.toggle('active', btnStep === this.currentStudioStep);
+    });
+
+    // Toggle step contents
+    this.stepContent1.style.display = this.currentStudioStep === 1 ? 'block' : 'none';
+    this.stepContent2.style.display = this.currentStudioStep === 2 ? 'block' : 'none';
+    this.stepContent3.style.display = this.currentStudioStep === 3 ? 'block' : 'none';
+    this.stepContent4.style.display = this.currentStudioStep === 4 ? 'block' : 'none';
+
+    // Toggle Back button
+    this.btnStudioPrev.style.display = this.currentStudioStep > 1 ? 'block' : 'none';
+
+    // Toggle Next / Finish button label
+    if (this.currentStudioStep === 4) {
+      this.btnStudioNext.textContent = 'Done & Listen 🎵';
+      // Generate link into the studio input
+      const link = ShareEngine.encodeToHash(this.data, true);
+      this.inputStudioShareLink.value = link;
+      this.studioCopySuccess.style.display = 'none';
+    } else {
+      this.btnStudioNext.textContent = 'Next →';
     }
+  }
 
-    const selectedStickerPill = this.stickerPills.querySelector('.radio-pill.selected');
-    if (selectedStickerPill) {
-      this.data.sticker = selectedStickerPill.getAttribute('data-value');
-    }
+  _openCustomizeModal() {
+    this._openCreatorStudio(1);
+  }
 
-    mixtapeStore.saveMixtape(this.data);
-    this._renderAll();
+  _shareOnWhatsApp(customLink) {
+    const link = customLink || ShareEngine.encodeToHash(this.data, true);
+    const title = this.data.title || 'Our Special Mixtape';
+    const recipient = this.data.recipient || 'My Favorite Person';
+    const sender = this.data.sender || 'Alex';
+    const text = `Hey ${recipient}! I made a special music mixtape just for you: "${title}" 📼✨\n\nTap here to unwrap your gift:\n${link}`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+  }
+
+  _testRecipientUnboxing() {
     this.customizeModal.classList.remove('active');
+    this.shareModal.classList.remove('active');
+    this._showGiftOverlay();
   }
 
   _resetDefaults() {
     if (confirm('Reset mixtape back to sample tracks and love note?')) {
       this.data = mixtapeStore.resetMixtape();
       this._renderAll();
-      this.customizeModal.classList.remove('active');
+      this._openCreatorStudio(1);
     }
   }
 
