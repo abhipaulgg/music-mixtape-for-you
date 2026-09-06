@@ -3,6 +3,7 @@ import { TapeAudioPlayer } from './audio-player.js?v=2.5';
 import { mixtapeStore } from './mixtape-store.js?v=2.5';
 import { ShareEngine } from './share-engine.js?v=2.5';
 import { PRESET_SONGS } from './preset-songs.js?v=2.5';
+import { authManager } from './auth-manager.js?v=3.0';
 
 class MixtapeApp {
   constructor() {
@@ -11,6 +12,7 @@ class MixtapeApp {
     this.activeSide = 'A';
     this.currentTrackIndex = 0;
     this.isFlipped = false;
+    this.isRecipientMode = false;
 
     this._checkURLParameters();
     this._cacheDOMElements();
@@ -21,6 +23,7 @@ class MixtapeApp {
   _checkURLParameters() {
     const urlData = ShareEngine.decodeFromURL();
     if (urlData && urlData.data) {
+      this.isRecipientMode = true;
       this.data = {
         ...this.data,
         ...urlData.data,
@@ -30,17 +33,40 @@ class MixtapeApp {
       if (urlData.isGift) {
         this.startInGiftMode = true;
       }
+    } else {
+      this.isRecipientMode = false;
     }
   }
 
   _cacheDOMElements() {
-    // Header & Subtitles
+    // Header & Brand
+    this.brandHomeBtn = document.getElementById('brandHomeBtn');
     this.headerSubtitle = document.getElementById('headerSubtitle');
     this.btnCreateMixtape = document.getElementById('btnCreateMixtape');
     this.btnOpenLetter = document.getElementById('btnOpenLetter');
     this.btnOpenCustomize = document.getElementById('btnOpenCustomize');
     this.btnOpenAddSong = document.getElementById('btnOpenAddSong');
     this.btnOpenShare = document.getElementById('btnOpenShare');
+
+    // Google Auth & User Profile Chip
+    this.googleSignInBtn = document.getElementById('googleSignInBtn');
+    this.userProfileChip = document.getElementById('userProfileChip');
+    this.userAvatar = document.getElementById('userAvatar');
+    this.userNameText = document.getElementById('userNameText');
+    this.btnOpenMyMixtapes = document.getElementById('btnOpenMyMixtapes');
+    this.btnSignOut = document.getElementById('btnSignOut');
+
+    // Creator Sections & Hero
+    this.creatorHero = document.querySelector('.creator-hero');
+    this.sectionCardNames = document.getElementById('sectionCardNames');
+    this.sectionCardColors = document.getElementById('sectionCardColors');
+    this.sectionCardLetter = document.getElementById('sectionCardLetter');
+    this.sectionCardTracklist = document.getElementById('sectionCardTracklist');
+    this.sectionCardLock = document.getElementById('sectionCardLock');
+    this.btnLockAndShare = document.getElementById('btnLockAndShare');
+    this.recipientOverviewCard = document.getElementById('recipientOverviewCard');
+    this.recipientOverviewText = document.getElementById('recipientOverviewText');
+    this.btnRecipientReadLetter = document.getElementById('btnRecipientReadLetter');
 
     // Cassette Elements
     this.cassetteFlipper = document.getElementById('cassetteFlipper');
@@ -90,6 +116,12 @@ class MixtapeApp {
     this.letterRecipientHeader = document.getElementById('letterRecipientHeader');
     this.letterBody = document.getElementById('letterBody');
     this.letterSenderSignature = document.getElementById('letterSenderSignature');
+
+    // My Saved Mixtapes Modal
+    this.myMixtapesModal = document.getElementById('myMixtapesModal');
+    this.btnCloseMyMixtapes = document.getElementById('btnCloseMyMixtapes');
+    this.btnDoneMyMixtapes = document.getElementById('btnDoneMyMixtapes');
+    this.myMixtapesList = document.getElementById('myMixtapesList');
 
     // Creator Studio / Customize Modal
     this.customizeModal = document.getElementById('customizeModal');
@@ -213,52 +245,74 @@ class MixtapeApp {
     this.tabSideA.addEventListener('click', () => this.switchSide('A'));
     this.tabSideB.addEventListener('click', () => this.switchSide('B'));
 
-    // Click memory card to edit current song note
+    // Click memory card to edit current song note (only in creator mode)
     this.memoryCard.addEventListener('click', () => {
-      this._editTrackNote(this.currentTrackIndex);
+      if (!this.isRecipientMode) {
+        this._editTrackNote(this.currentTrackIndex);
+      }
+    });
+
+    // Home / Brand click
+    this.brandHomeBtn?.addEventListener('click', () => {
+      if (window.location.hash || window.location.search) {
+        window.location.href = window.location.origin + window.location.pathname;
+      }
     });
 
     // Modals open/close
     this.btnOpenLetter.addEventListener('click', () => this._openLetterModal());
     this.btnCloseLetter.addEventListener('click', () => this.letterModal.classList.remove('active'));
+    this.btnRecipientReadLetter?.addEventListener('click', () => this._openLetterModal());
 
-    // Create a Mixtape button in header
-    this.btnCreateMixtape.addEventListener('click', () => this._openCreatorStudio(1));
+    // Google Auth & Saved Library
+    authManager.onAuthStateChanged = (user) => this._renderAuthState(user);
+    this._renderAuthState(authManager.user);
 
-    // Customize button in header
-    this.btnOpenCustomize.addEventListener('click', () => this._openCreatorStudio(1));
-    this.btnCloseCustomize.addEventListener('click', () => this.customizeModal.classList.remove('active'));
-    this.btnResetDefaults.addEventListener('click', () => this._resetDefaults());
+    this.btnSignOut?.addEventListener('click', () => authManager.signOut());
+    this.btnOpenMyMixtapes?.addEventListener('click', () => this._openMyMixtapesModal());
+    this.btnCloseMyMixtapes?.addEventListener('click', () => this.myMixtapesModal.classList.remove('active'));
+    this.btnDoneMyMixtapes?.addEventListener('click', () => this.myMixtapesModal.classList.remove('active'));
+
+    // Lock In & Share CTA
+    this.btnLockAndShare?.addEventListener('click', () => this._handleLockAndShare());
+
+    // Create a Mixtape button in header (if present)
+    this.btnCreateMixtape?.addEventListener('click', () => this._openCreatorStudio(1));
+
+    // Customize button in header (if present)
+    this.btnOpenCustomize?.addEventListener('click', () => this._openCreatorStudio(1));
+    this.btnCloseCustomize?.addEventListener('click', () => this.customizeModal.classList.remove('active'));
+    this.btnResetDefaults?.addEventListener('click', () => this._resetDefaults());
 
     // Live Real-Time Updating as user types in Creator Studio
-    this.inputMixtapeTitle.addEventListener('input', () => {
+    this.inputMixtapeTitle?.addEventListener('input', () => {
       const val = this.inputMixtapeTitle.value.trim() || 'Our Special Mixtape ✨';
       this.data.title = val;
       this.cassetteTitleTexts.forEach(el => el.textContent = val);
       mixtapeStore.saveMixtape(this.data);
     });
 
-    this.inputRecipient.addEventListener('input', () => {
+    this.inputRecipient?.addEventListener('input', () => {
       const rec = this.inputRecipient.value.trim() || 'Someone Special';
       this.data.recipient = rec;
-      this.headerSubtitle.textContent = `For ${rec} • From ${this.data.sender || 'Alex'} ❤️`;
+      this.headerSubtitle.textContent = `For ${rec} • From ${this.data.sender || 'Your Friend'} ❤️`;
       mixtapeStore.saveMixtape(this.data);
     });
 
-    this.inputSender.addEventListener('input', () => {
-      const snd = this.inputSender.value.trim() || 'Alex';
+    this.inputSender?.addEventListener('input', () => {
+      const snd = this.inputSender.value.trim() || 'Your Friend';
       this.data.sender = snd;
       this.headerSubtitle.textContent = `For ${this.data.recipient || 'Someone Special'} • From ${snd} ❤️`;
       mixtapeStore.saveMixtape(this.data);
     });
 
-    this.inputLetter.addEventListener('input', () => {
+    this.inputLetter?.addEventListener('input', () => {
       this.data.letter = this.inputLetter.value;
       mixtapeStore.saveMixtape(this.data);
     });
 
-    // Studio Wizard Steps navigation
-    this.studioStepTabs.addEventListener('click', (e) => {
+    // Studio Wizard Steps navigation (if modal used)
+    this.studioStepTabs?.addEventListener('click', (e) => {
       const btn = e.target.closest('.studio-tab-btn');
       if (btn) {
         const step = parseInt(btn.getAttribute('data-step'), 10);
@@ -375,6 +429,7 @@ class MixtapeApp {
   _renderAll() {
     this._applyTheme(this.data.theme || 'rose');
     this._renderCassetteMetadata();
+    this._applyModeView();
     this._renderTracklist();
     this._loadCurrentTrack(false);
 
@@ -387,12 +442,64 @@ class MixtapeApp {
     document.documentElement.setAttribute('data-theme', theme);
   }
 
+  _applyModeView() {
+    if (this.isRecipientMode) {
+      document.body.classList.add('recipient-mode');
+      if (this.creatorHero) this.creatorHero.style.display = 'none';
+      if (this.sectionCardNames) this.sectionCardNames.style.display = 'none';
+      if (this.sectionCardColors) this.sectionCardColors.style.display = 'none';
+      if (this.sectionCardLetter) this.sectionCardLetter.style.display = 'none';
+      if (this.sectionCardLock) this.sectionCardLock.style.display = 'none';
+      if (this.btnOpenAddSong) this.btnOpenAddSong.style.display = 'none';
+
+      if (this.recipientOverviewCard) {
+        this.recipientOverviewCard.style.display = 'block';
+        const tapeTitle = this.data.title || 'Our Special Mixtape';
+        const sender = this.data.sender || 'Someone Special';
+        const recipient = this.data.recipient || 'You';
+        if (this.recipientOverviewText) {
+          this.recipientOverviewText.innerHTML = `<strong>"${this._escapeHTML(tapeTitle)}"</strong><br>A personalized collection curated with love by <strong>${this._escapeHTML(sender)}</strong> for <strong>${this._escapeHTML(recipient)}</strong>. Put on your headphones, press play, and enjoy! ✨`;
+        }
+      }
+    } else {
+      document.body.classList.remove('recipient-mode');
+      if (this.creatorHero) this.creatorHero.style.display = 'block';
+      if (this.sectionCardNames) this.sectionCardNames.style.display = 'block';
+      if (this.sectionCardColors) this.sectionCardColors.style.display = 'block';
+      if (this.sectionCardLetter) this.sectionCardLetter.style.display = 'block';
+      if (this.sectionCardLock) this.sectionCardLock.style.display = 'flex';
+      if (this.btnOpenAddSong) this.btnOpenAddSong.style.display = 'inline-flex';
+      if (this.recipientOverviewCard) this.recipientOverviewCard.style.display = 'none';
+
+      this._populateCreatorInputs();
+    }
+  }
+
+  _populateCreatorInputs() {
+    if (this.inputMixtapeTitle) this.inputMixtapeTitle.value = this.data.title || '';
+    if (this.inputRecipient) this.inputRecipient.value = this.data.recipient || '';
+    if (this.inputSender) this.inputSender.value = this.data.sender || '';
+    if (this.inputLetter) this.inputLetter.value = this.data.letter || '';
+
+    if (this.themePills) {
+      this.themePills.querySelectorAll('.radio-pill').forEach(p => {
+        p.classList.toggle('selected', p.getAttribute('data-value') === (this.data.theme || 'rose'));
+      });
+    }
+
+    if (this.stickerPills) {
+      this.stickerPills.querySelectorAll('.radio-pill').forEach(p => {
+        p.classList.toggle('selected', p.getAttribute('data-value') === (this.data.sticker || 'heart'));
+      });
+    }
+  }
+
   _renderCassetteMetadata() {
     const title = this.data.title || 'Our Mixtape';
     this.cassetteTitleTexts.forEach(el => el.textContent = title);
 
     const recipient = this.data.recipient || 'Someone Special';
-    const sender = this.data.sender || 'Alex';
+    const sender = this.data.sender || 'Your Friend';
     this.headerSubtitle.textContent = `For ${recipient} • From ${sender} ❤️`;
 
     // Sticker map
@@ -423,7 +530,7 @@ class MixtapeApp {
     if (!sideTracks || sideTracks.length === 0) {
       this.tracksContainer.innerHTML = `
         <div class="empty-tracks-notice">
-          No songs on Side ${this.activeSide} yet.<br>Click <strong>Add Song</strong> to add a special melody!
+          No songs on Side ${this.activeSide} yet.<br>${!this.isRecipientMode ? 'Click <strong>Add Song</strong> to add a special melody!' : 'Empty side.'}
         </div>
       `;
       return;
@@ -454,12 +561,14 @@ class MixtapeApp {
         </div>
         <div class="track-actions">
           <span class="track-duration">${this._formatTime(track.duration || 180)}</span>
-          <button class="icon-btn edit-note" title="Edit personal note for this song" data-index="${index}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-          </button>
-          <button class="icon-btn delete" title="Remove track" data-index="${index}">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-          </button>
+          ${!this.isRecipientMode ? `
+            <button class="icon-btn edit-note" title="Edit personal note for this song" data-index="${index}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            </button>
+            <button class="icon-btn delete" title="Remove track" data-index="${index}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
+          ` : ''}
         </div>
       `;
 
@@ -635,7 +744,7 @@ class MixtapeApp {
   _openLetterModal() {
     this.letterRecipientHeader.textContent = `To ${this.data.recipient || 'My Favorite Person'},`;
     this.letterBody.textContent = this.data.letter || 'No letter written yet.';
-    this.letterSenderSignature.textContent = `With all my love,\n${this.data.sender || 'Alex'}`;
+    this.letterSenderSignature.textContent = `With all my love,\n${this.data.sender || 'Your Friend'}`;
     this.letterModal.classList.add('active');
   }
 
@@ -697,7 +806,7 @@ class MixtapeApp {
     const link = customLink || ShareEngine.encodeToHash(this.data, true);
     const title = this.data.title || 'Our Special Mixtape';
     const recipient = this.data.recipient || 'My Favorite Person';
-    const sender = this.data.sender || 'Alex';
+    const sender = this.data.sender || 'Your Friend';
     const text = `Hey ${recipient}! I made a special music mixtape just for you: "${title}" 📼✨\n\nTap here to unwrap your gift:\n${link}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
   }
@@ -972,10 +1081,132 @@ class MixtapeApp {
     this._renderCassetteMetadata();
   }
 
-  _openShareModal() {
+  // ================= GOOGLE AUTH & USER MIXTAPE LIBRARY =================
+
+  _renderAuthState(user) {
+    if (user) {
+      if (this.googleSignInBtn) this.googleSignInBtn.style.display = 'none';
+      if (this.userProfileChip) {
+        this.userProfileChip.style.display = 'flex';
+        if (this.userAvatar) this.userAvatar.src = user.avatar || '';
+        if (this.userNameText) this.userNameText.textContent = user.name || 'My Account';
+      }
+      // If creator's sender name is default or empty, prefill with user's name
+      if (!this.data.sender || this.data.sender === 'Your Closest Friend' || this.data.sender === 'Alex' || this.data.sender === 'Your Friend') {
+        this.data.sender = user.name.split(' ')[0] || user.name;
+        if (this.inputSender) this.inputSender.value = this.data.sender;
+        this._renderCassetteMetadata();
+        mixtapeStore.saveMixtape(this.data);
+      }
+    } else {
+      if (this.googleSignInBtn) this.googleSignInBtn.style.display = 'block';
+      if (this.userProfileChip) this.userProfileChip.style.display = 'none';
+    }
+  }
+
+  _openMyMixtapesModal() {
+    this._renderMyMixtapesList();
+    this.myMixtapesModal.classList.add('active');
+  }
+
+  _renderMyMixtapesList() {
+    if (!this.myMixtapesList) return;
+    const tapes = authManager.getUserMixtapes();
+    this.myMixtapesList.innerHTML = '';
+
+    if (!tapes || tapes.length === 0) {
+      this.myMixtapesList.innerHTML = `
+        <div style="text-align: center; color: #94a3b8; padding: 24px 12px; font-size: 0.9rem;">
+          No saved mixtapes yet.<br>Customize your tape and click <strong>"Lock In & Generate Share Link"</strong> to save it here! ✨
+        </div>
+      `;
+      return;
+    }
+
+    tapes.forEach(tape => {
+      const card = document.createElement('div');
+      card.className = 'saved-mixtape-card';
+      const songCount = ((tape.sideA || []).length + (tape.sideB || []).length);
+      const dateStr = tape.updatedAt ? new Date(tape.updatedAt).toLocaleDateString() : 'Recently';
+
+      card.innerHTML = `
+        <div class="saved-tape-meta">
+          <div class="saved-tape-title">${this._escapeHTML(tape.title || 'Untitled Mixtape')}</div>
+          <div class="saved-tape-sub">For: ${this._escapeHTML(tape.recipient || 'Someone Special')} • ${songCount} songs • ${dateStr}</div>
+        </div>
+        <div class="saved-tape-actions">
+          <button class="btn btn-primary btn-sm btn-load-tape" title="Open and edit this mixtape">Open & Edit</button>
+          <button class="btn btn-secondary btn-sm btn-copy-saved-link" title="Copy share link">Copy Link</button>
+          <button class="icon-btn btn-delete-saved" title="Delete from saved library" style="color: #f43f5e;">🗑️</button>
+        </div>
+      `;
+
+      // Wire Open & Edit
+      card.querySelector('.btn-load-tape').addEventListener('click', () => {
+        this.data = JSON.parse(JSON.stringify(tape));
+        mixtapeStore.saveMixtape(this.data);
+        this.isRecipientMode = false;
+        this._applyModeView();
+        this._renderAll();
+        this.myMixtapesModal.classList.remove('active');
+      });
+
+      // Wire Copy Link
+      card.querySelector('.btn-copy-saved-link').addEventListener('click', () => {
+        const link = ShareEngine.encodeToHash(tape, true);
+        navigator.clipboard.writeText(link).then(() => {
+          alert('Mixtape link copied to clipboard! ✨');
+        });
+      });
+
+      // Wire Delete
+      card.querySelector('.btn-delete-saved').addEventListener('click', () => {
+        if (confirm(`Delete "${tape.title}" from your library?`)) {
+          authManager.deleteMixtapeFromLibrary(tape.id);
+          this._renderMyMixtapesList();
+        }
+      });
+
+      this.myMixtapesList.appendChild(card);
+    });
+  }
+
+  _handleLockAndShare() {
+    let isSaved = false;
+    if (authManager.user) {
+      isSaved = authManager.saveMixtapeToLibrary(this.data);
+    }
+    this._openShareModal(isSaved);
+  }
+
+  _openShareModal(savedToLibrary = false) {
     const shareUrl = ShareEngine.encodeToHash(this.data, true);
     this.inputShareLink.value = shareUrl;
     this.copySuccessNotice.style.display = 'none';
+
+    let noticeEl = document.getElementById('shareModalNoticeBox');
+    if (!noticeEl) {
+      noticeEl = document.createElement('div');
+      noticeEl.id = 'shareModalNoticeBox';
+      noticeEl.style.cssText = 'font-size: 0.85rem; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; line-height: 1.4;';
+      const container = this.inputShareLink.closest('.form-group');
+      if (container && container.parentNode) {
+        container.parentNode.insertBefore(noticeEl, container);
+      }
+    }
+
+    if (authManager.user) {
+      noticeEl.style.background = 'rgba(16, 185, 129, 0.15)';
+      noticeEl.style.border = '1px solid rgba(16, 185, 129, 0.4)';
+      noticeEl.style.color = '#34d399';
+      noticeEl.innerHTML = `✓ <strong>Saved to your Google Library!</strong> You can revisit and edit this tape anytime from "My Mixtapes". When recipients open your link, it will be sealed as a gift.`;
+    } else {
+      noticeEl.style.background = 'rgba(244, 63, 94, 0.12)';
+      noticeEl.style.border = '1px solid rgba(244, 63, 94, 0.35)';
+      noticeEl.style.color = '#fca5a5';
+      noticeEl.innerHTML = `🔒 <strong>Guest Link Sealed:</strong> Once shared, this mixtape is locked and cannot be edited. <br><em>Tip: Sign in with Google at top right to save and edit this mixtape anytime!</em>`;
+    }
+
     this.shareModal.classList.add('active');
   }
 
